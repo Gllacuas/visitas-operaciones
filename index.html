@@ -2,19 +2,20 @@
 <html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Visita de Operaciones — Don Salazar Coffee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=Noto+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
  :root{--coffee:#4a2e1e;--coffee2:#6f4e37;--gold:#c8a35b;--cream:#f6f1e9;--green:#2e7d32;--red:#c62828;--gray:#8a7d70;--line:#e3d8c8}
- *{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--cream);color:#2b2018}
+ *{box-sizing:border-box}body{margin:0;font-family:'Golos Text','Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--cream);color:#2b2018}
  header.app{background:linear-gradient(135deg,var(--coffee),var(--coffee2));color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.25)}
- header.app .brand h1{margin:0;font-size:19px}header.app .brand p{margin:2px 0 0;font-size:12px;color:var(--gold);font-style:italic}
+ header.app .brand h1{margin:0;font-size:19px;font-family:'Noto Serif',Georgia,serif;font-weight:600}header.app .brand p{margin:2px 0 0;font-size:12px;color:var(--gold);font-style:italic;font-family:'Noto Serif',Georgia,serif}
  .score-pill{text-align:center;background:rgba(255,255,255,.12);border:1px solid var(--gold);border-radius:14px;padding:6px 16px;min-width:96px}
  .score-pill .big{font-size:26px;font-weight:700;line-height:1}.score-pill .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gold)}
  .wrap{max-width:1080px;margin:20px auto;padding:0 16px}
  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
- .card h2.sec{margin:0 0 12px;font-size:17px;color:var(--coffee)}
+ .card h2.sec{margin:0 0 12px;font-size:17px;color:var(--coffee);font-family:'Noto Serif',Georgia,serif;font-weight:600}
  .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
  .meta-grid label{display:block;font-size:12px;font-weight:600;color:var(--coffee2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
  .meta-grid input,.meta-grid select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fffdfa}
