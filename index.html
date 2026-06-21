@@ -1,342 +1,225 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Visita de Operaciones (Web) — Don Salazar Coffee</title>
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visita de Operaciones — Don Salazar Coffee</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root{
-    --coffee:#4a2e1e; --coffee2:#6f4e37; --gold:#c8a35b; --cream:#f6f1e9;
-    --green:#2e7d32; --red:#c62828; --gray:#8a7d70; --line:#e3d8c8;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--cream);color:#2b2018}
-  header.app{background:linear-gradient(135deg,var(--coffee),var(--coffee2));color:#fff;padding:18px 26px;
-    display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.25)}
-  header.app .brand h1{margin:0;font-size:20px;letter-spacing:.5px}
-  header.app .brand p{margin:2px 0 0;font-size:12px;color:var(--gold);font-style:italic}
-  .score-pill{text-align:center;background:rgba(255,255,255,.12);border:1px solid var(--gold);
-    border-radius:14px;padding:8px 18px;min-width:120px}
-  .score-pill .big{font-size:30px;font-weight:700;line-height:1}
-  .score-pill .lbl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--gold)}
-  .wrap{max-width:1080px;margin:22px auto;padding:0 18px}
-  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
-  .card h2.sec{margin:0 0 14px;font-size:17px;color:var(--coffee)}
-  .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
-  .meta-grid label{display:block;font-size:12px;font-weight:600;color:var(--coffee2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
-  .meta-grid input,.meta-grid select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fffdfa}
-  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px}
-  .btn{border:none;border-radius:9px;padding:11px 16px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.15s}
-  .btn:hover{transform:translateY(-1px)}
-  .btn-pdf{background:var(--coffee);color:#fff}
-  .btn-xls{background:#1d6f42;color:#fff}
-  .btn-save{background:var(--gold);color:#3b2415}
-  .btn-load{background:#efe6d6;color:#5b432e}
-  .lego{margin-bottom:16px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
-  .lego-head{background:var(--coffee2);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
-  .lego-head h2{margin:0;font-size:16px;letter-spacing:.5px}
-  .lego-badge{font-size:13px;font-weight:700;background:rgba(255,255,255,.15);border:1px solid var(--gold);padding:3px 10px;border-radius:20px}
-  .lego-body{padding:6px 0}
-  .sub{padding:14px 18px;border-top:1px solid var(--line)}
-  .sub-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
-  .sub-name{font-weight:600;font-size:15px;color:#3b2a1c}
-  .sub-met{font-size:12px;color:var(--gray);margin-top:4px;white-space:pre-line;display:none}
-  .met-toggle{font-size:11px;color:var(--coffee2);cursor:pointer;text-decoration:underline;margin-top:3px;display:inline-block}
-  .checks{display:flex;gap:6px;flex-shrink:0}
-  .chk{padding:7px 12px;border-radius:8px;border:1.5px solid var(--line);background:#faf6ef;cursor:pointer;font-size:13px;font-weight:600;color:#7a6a5a;white-space:nowrap}
-  .chk.sel-c{background:var(--green);color:#fff;border-color:var(--green)}
-  .chk.sel-n{background:var(--red);color:#fff;border-color:var(--red)}
-  .chk.sel-na{background:var(--gray);color:#fff;border-color:var(--gray)}
-  .sub-extra{margin-top:10px}
-  .sub-extra textarea{width:100%;min-height:46px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;resize:vertical;font-family:inherit}
-  .evi-lego{border:1px solid var(--line);border-radius:10px;margin-bottom:14px;overflow:hidden}
-  .evi-head{background:#f3ece0;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
-  .evi-head b{color:var(--coffee2);font-size:14px;letter-spacing:.5px}
-  .evi-head .cnt{font-size:12px;color:var(--gray)}
-  .evi-body{padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-  .thumb{position:relative;width:96px;height:96px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#faf6ef}
-  .thumb img{width:100%;height:100%;object-fit:cover}
-  .thumb .num{position:absolute;bottom:1px;left:1px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:1px 5px;border-radius:6px}
-  .thumb .x{position:absolute;top:1px;right:1px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;line-height:1}
-  .addimg{font-size:13px;color:var(--coffee2);cursor:pointer;border:1.5px dashed var(--gold);padding:14px 16px;border-radius:8px;background:#fffdf7;text-align:center;min-width:96px;min-height:96px;display:flex;align-items:center;justify-content:center}
-  .hint{font-size:12px;color:var(--gray);margin:4px 0 14px}
-  footer{text-align:center;color:var(--gray);font-size:12px;padding:24px}
-  @media(max-width:640px){.sub-top{flex-direction:column}.checks{width:100%}}
-</style>
-</head>
-<body>
+ :root{--coffee:#4a2e1e;--coffee2:#6f4e37;--gold:#c8a35b;--cream:#f6f1e9;--green:#2e7d32;--red:#c62828;--gray:#8a7d70;--line:#e3d8c8}
+ *{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--cream);color:#2b2018}
+ header.app{background:linear-gradient(135deg,var(--coffee),var(--coffee2));color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+ header.app .brand h1{margin:0;font-size:19px}header.app .brand p{margin:2px 0 0;font-size:12px;color:var(--gold);font-style:italic}
+ .score-pill{text-align:center;background:rgba(255,255,255,.12);border:1px solid var(--gold);border-radius:14px;padding:6px 16px;min-width:96px}
+ .score-pill .big{font-size:26px;font-weight:700;line-height:1}.score-pill .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gold)}
+ .wrap{max-width:1080px;margin:20px auto;padding:0 16px}
+ .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+ .card h2.sec{margin:0 0 12px;font-size:17px;color:var(--coffee)}
+ .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+ .meta-grid label{display:block;font-size:12px;font-weight:600;color:var(--coffee2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+ .meta-grid input,.meta-grid select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fffdfa}
+ .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 16px}
+ .btn{border:none;border-radius:9px;padding:11px 16px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+ .btn-pdf{background:var(--coffee);color:#fff}.btn-xls{background:#1d6f42;color:#fff}.btn-save{background:var(--gold);color:#3b2415}.btn-load{background:#efe6d6;color:#5b432e}
+ .lego{margin-bottom:16px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+ .lego-head{background:var(--coffee2);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
+ .lego-head h2{margin:0;font-size:16px}.lego-badge{font-size:13px;font-weight:700;background:rgba(255,255,255,.15);border:1px solid var(--gold);padding:3px 10px;border-radius:20px}
+ .sub{padding:14px 18px;border-top:1px solid var(--line)}
+ .sub-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+ .sub-name{font-weight:600;font-size:15px;color:#3b2a1c}
+ .sub-met{font-size:12px;color:var(--gray);margin-top:4px;white-space:pre-line;display:none}
+ .met-toggle{font-size:11px;color:var(--coffee2);cursor:pointer;text-decoration:underline;margin-top:3px;display:inline-block}
+ .checks{display:flex;gap:6px;flex-shrink:0}
+ .chk{padding:7px 12px;border-radius:8px;border:1.5px solid var(--line);background:#faf6ef;cursor:pointer;font-size:13px;font-weight:600;color:#7a6a5a;white-space:nowrap}
+ .chk.sel-c{background:var(--green);color:#fff;border-color:var(--green)}.chk.sel-n{background:var(--red);color:#fff;border-color:var(--red)}.chk.sel-na{background:var(--gray);color:#fff;border-color:var(--gray)}
+ .sub-extra{margin-top:10px}.sub-extra textarea{width:100%;min-height:46px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;resize:vertical;font-family:inherit}
+ .evi-body{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+ .thumb{position:relative;width:104px;height:104px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#faf6ef}
+ .thumb img{width:100%;height:100%;object-fit:cover}
+ .thumb .num{position:absolute;top:2px;left:2px;background:rgba(74,46,30,.85);color:#fff;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6px}
+ .thumb .ctl{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;background:rgba(0,0,0,.45)}
+ .thumb .ctl button{flex:1;background:none;border:none;color:#fff;cursor:pointer;font-size:13px;padding:2px 0}
+ .addimg{font-size:14px;color:var(--coffee2);cursor:pointer;border:1.5px dashed var(--gold);padding:18px 16px;border-radius:8px;background:#fffdf7;text-align:center;min-width:104px;min-height:104px;display:flex;align-items:center;justify-content:center}
+ .hint{font-size:12px;color:var(--gray);margin:4px 0 14px}
+ footer{text-align:center;color:var(--gray);font-size:12px;padding:24px}
+ @media(max-width:640px){.sub-top{flex-direction:column}.checks{width:100%}}
+</style></head><body>
 <header class="app">
-  <div class="brand">
-    <h1>Visita de Operaciones</h1>
-    <p>Don Salazar Coffee — Café con Sabor a Perú</p>
-  </div>
-  <div class="score-pill">
-    <div class="big" id="scoreBig">0%</div>
-    <div class="lbl">Nota general</div>
-  </div>
+ <div class="brand"><h1>Visita de Operaciones</h1><p>Don Salazar Coffee — Café con Sabor a Perú</p></div>
+ <div class="score-pill"><div class="big" id="scoreBig">0%</div><div class="lbl">Nota general</div></div>
 </header>
-
 <div class="wrap">
-  <div class="card">
-    <div class="meta-grid">
-      <div><label>Sede</label><select id="mSede"></select></div>
-      <div><label>Mes</label><select id="mMes"></select></div>
-      <div><label>Fecha</label><input type="date" id="mFecha"></div>
-      <div><label>Visita</label><select id="mVisita"><option>Visita 1</option><option>Visita 2</option></select></div>
-      <div><label>Encargado de sede</label><input type="text" id="mEnc" placeholder="Escribe el encargado de la visita"></div>
-    </div>
-  </div>
-
-  <div class="toolbar">
-    <button class="btn btn-pdf" onclick="exportPDF()">⬇ Descargar PDF resumen</button>
-    <button class="btn btn-xls" onclick="exportXLS()">⬇ Exportar filas al Informe</button>
-    <button class="btn btn-save" onclick="saveProgress()">💾 Guardar avance</button>
-    <button class="btn btn-load" onclick="document.getElementById('loadFile').click()">📂 Cargar avance</button>
-    <input type="file" id="loadFile" accept=".json" style="display:none" onchange="loadProgress(event)">
-  </div>
-  <div class="hint">Marca <b>Cumple</b> / <b>No cumple</b> / <b>N.A.</b> en cada punto y agrega la observación. Las <b>fotos se cargan al final</b>, agrupadas por lego, y el PDF las coloca ordenadas.</div>
-
-  <div id="legos"></div>
-
-  <div class="card" id="evidencias">
-    <h2 class="sec">📷 Evidencia fotográfica</h2>
-    <div class="hint">Sube aquí todas las fotos al terminar. Agrégalas en el lego que corresponde; en el PDF aparecen ordenadas por lego.</div>
-    <div id="eviBoxes"></div>
-  </div>
+ <div class="card"><div class="meta-grid">
+   <div><label>Sede</label><select id="mSede"></select></div>
+   <div><label>Mes</label><select id="mMes"></select></div>
+   <div><label>Fecha</label><input type="date" id="mFecha"></div>
+   <div><label>Visita</label><select id="mVisita"><option>Visita 1</option><option>Visita 2</option></select></div>
+   <div><label>Encargado de sede</label><input type="text" id="mEnc" placeholder="Escribe el encargado de la visita"></div>
+ </div></div>
+ <div class="toolbar">
+   <button class="btn btn-pdf" onclick="exportPDF()">⬇ Descargar PDF resumen</button>
+   <button class="btn btn-xls" onclick="exportXLS()">⬇ Exportar filas al Informe</button>
+   <button class="btn btn-save" onclick="saveProgress()">💾 Guardar avance</button>
+   <button class="btn btn-load" onclick="document.getElementById('loadFile').click()">📂 Cargar avance</button>
+   <input type="file" id="loadFile" accept=".json" style="display:none" onchange="loadProgress(event)">
+ </div>
+ <div class="hint">Marca <b>Cumple</b> / <b>No cumple</b> / <b>N.A.</b> en cada punto y agrega la observación. Las <b>fotos se cargan todas juntas al final</b>; ordénalas con ◀ ▶ y así salen en el PDF.</div>
+ <div id="legos"></div>
+ <div class="card"><h2 class="sec">📷 Evidencia fotográfica</h2>
+   <div class="hint">Sube aquí <b>todas</b> las fotos de la visita (de cualquier lego). Ordénalas con las flechas; el PDF las muestra numeradas en ese orden.</div>
+   <div class="evi-body" id="eviBody">
+     <label class="addimg">＋ Agregar fotos<input type="file" accept="image/*" multiple style="display:none" onchange="addEvid(event)"></label>
+   </div>
+ </div>
 </div>
 <footer>Don Salazar Coffee · Operaciones · Café con Sabor a Perú</footer>
-
 <script>
-const LEGOS = {"legos": [{"lego": "DINERO", "subs": [{"sub": "Arqueo de caja", "met": "No presenta diferencias de dinero ni en POS.\nNo presenta billetes falsos.\nDe encontrarse dinero fuera de la caja se considerara como sobrante.", "pobj": 1}, {"sub": "Cuadre de caja AM y PM", "met": "Realizó el correcto registro de billetes y monedas en cada cuadre de caja.", "pobj": 1}, {"sub": "Boletas y facturas", "met": "Caja, POS y tiquetera funcionan correctamente.\nLa sede cumple con emisión y entrega del comprobante, no omite su entrega a los clientes.", "pobj": 1}, {"sub": "Depósito", "met": "Se realizó el depósito en el banco al llegar al monto máximo de 1000 soles.\nSe debe quedar con el monto en efectivo de caja chica según la sede.", "pobj": 1}, {"sub": "Caja chica", "met": "Cumple con el registro y envío cada domingo el consolidado de caja chica correspondiente al mes.\nSolo se aceptarán facturas para compras y en caso de movilidades el ticket que indica ruta, monto y fecha.\nNo debe superar el monto presupuestado en soles por sede al mes.", "pobj": 1}, {"sub": "Consumo de influencers e inversionistas", "met": "Cumple con el correcto registro en el sistema, envío de evidencia y etiqueta por el grupo de Whatsapp de sede.", "pobj": 1}, {"sub": "Anulaciones", "met": "No realiza más de 5 anulaciones al mes entre todos los colaboradores de la sede.", "pobj": 1}, {"sub": "Propinas", "met": "Las propinas están debidamente separadas dentro de la caja y registradas en el sistema.", "pobj": 1}, {"sub": "Billetes falsos", "met": "Ante la recepción de un billete aplica correctamente el procedimiento de identificación de billete falso en el siguiente link:\nhttps://www.bcrp.gob.pe/apps/numerario.html", "pobj": 1}, {"sub": "Alcance de ventas", "met": "Cuenta con el formato de avance de ventas abierto en caja y los colaboradores conocen su meta del día.", "pobj": 1}]}, {"lego": "HIGUIENE Y SANIDAD", "subs": [{"sub": "Tiempo de vida", "met": "Los productos se encuentran dentro de su tiempo de vida útil, no se encuentran vencidos, adulterados, ni mal rotulados.\nLos tapers o insumos que pertenezcan al personal deben tener la etiqueta de colaboradores y con la fecha de vencimimento del día.", "pobj": 1}, {"sub": "Área de producción", "met": "Los colaboradores cumplen con estándares bioseguridad: usa cofia cubriendo orejas, tapabocas y curbriendo la nariz, guantes mientras manipulan alimentos.\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Salón, baños y terrazas", "met": "Salón:\nLas paredes, pisos y zócalos de todas las áreas del local están libres de suciedad acumulada.\n\nBaños:\nLos inodoros/urinarios se encuentran limpios, sin mal olor.\nLavamanos, espejo, dispensadores y secamanos se encuentran sin acumulaciones de suciedad ni manchas.\nEl lavamanos se encuentra correctamente abastecido, jabón, gel y papel toalla en dispensadores.\nChecklist de limpieza ejecutado de acuerdo al horario.\n\nÁrea externa:\nTerraza, jardines, aceras, letreros o piezas publicitarias: bien mantenidas, limpios, si desperdicios, buena apariencia.\n\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Limpieza de áres internas", "met": "Paredes, pisos y zocalos de todo el local se encuentran sin acumulación de suciedad.\nAplica para las siguientes zonas: \nAlmacenes\nCajones y muebles de almacenaje\nZona producción\nCuarto de residuos\nSalón para taller\nCounter\n\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Limpieza de unidades de conservación", "met": "Las unidades de refrigeración, conservación y congelación se encuentran limpias, sin acumulación de grasa, polvo u otros.\nPuertas, manijas, empaquetaduras, ruedas limpias. \nNo se observa oxido en interior.\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Área de limpieza", "met": "Los utensilios de limpieza como trapeador, escoba, tachos, recogedor, carrito de limpieza y cartel de piso mojado están limpios, en buenas condiciones y libre de olores.\n\nLas pozas de lavado se encuentran libres de acumulación, manchas, caños limpios, no oxidados y en buen estado.\n\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Menaje, smallware e instrumentos", "met": "Deben encontrarse sin acumulaciones de suciedad, no oxidados, sin residuos o restos de etiqueta.\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Temperatura de unidades de conservación", "met": "Los alimentos congelados se encuentran en la cámara de congelación y están de acuerdo a los estándares de temperatura ≤-18°C.\n\nLos productos refrigerados se encuentran en la cámara de refrigeración y  mantienen en rango de temperatura seguro ≤4°C.", "pobj": 1}, {"sub": "Hielera y trampa de grasa", "met": "Realizan la correcta limpieza según cronograma.\nNo tiene acumulaciones de polvo, no están oxidados.\nCuenta con sus certificados al día.", "pobj": 1}, {"sub": "Químicos y paños", "met": "Los productos químicos y materiales de limpieza se almacenan lejos de los alimentos, en una zona exclusiva para su ubicación, correctamente almacenados (en su envase original),  debidamente rotulados, limpios y en buen estado.", "pobj": 1}, {"sub": "Limpieza de áreas internas", "met": "Paredes, pisos y zocalos de todo el local se encuentran sin acumulación de suciedad.\nAplica para las siguientes zonas: \nAlmacenes\nCajones y muebles de almacenaje\nZona producción\nCuarto de residuos\nSalón para taller\nCounter\n\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}]}, {"lego": "INVENTARIO", "subs": [{"sub": "Inventario", "met": "Todos los domingos se debe registrar el inventario que corresponda en excel y en el sistema.\n", "pobj": 1}, {"sub": "Mermas y salidas", "met": "Cumple con el registro de merma en formato excel y sistema.\nCumple con el envío del formato cada domingo por correo al área de operaciones.\nEn el caso de merma por error de receta o mala manipulación enviar evidencia de cámara, con fecha y hora, caso contrario se considerará descuento al responsable.\nLlegar a superar el 70% de cumplimiento de registro de mermas y salidas en el mes.", "pobj": 1}, {"sub": "Consumo interno", "met": "Cumple con el correcto registro en sistema y hace cumplir que los colaboradores de la sede y administrativo registren su consumo interno.", "pobj": 1}, {"sub": "Traspasos entre sedes", "met": "Registrar correctamente los traspasos en el sistema que se hayan registrados en el formato de caja chica.\nCumplimiento de más del 70% al mes.", "pobj": 1}, {"sub": "Almacenamiento", "met": "Los productos son correctamente almacenados de acuerdo al FIFO y sin poner en riesgo la condición del insumo.\nProductos seccionados por categorías para evitar contaminación y poder realizar correcto conteo.\nProductos correctamente sellado o cerrados y en buen estado.\nMantener los insumos por encima de los 15 cm del suelo.", "pobj": 1}, {"sub": "Lockers", "met": "Cuentan con espacio para el almacenaje de mochilas. \nEstos deben estar correctamente instalados, no oxidados, deteriorados o piezas faltantes.", "pobj": 1}, {"sub": "Balanzas, máquinas y métodos", "met": "Operativas, sin acumulaciones de suciedad, roturas o piezas faltantes.\nEn caso de estar inoperativas haber comunicado oportunamente por correo a operaciones.", "pobj": 1}, {"sub": "Menaje y cristalería", "met": "Mantener correcto estado y cantidad para la correcta atención al cliente.\nComunicar oportunamente por correo a operaciones cuando se descuenta un material.\nEn el caso de mala manipulación del cliente enviar evidencia de cámara, con fecha y hora oportunamente.\nEn el caso de mala manipulación del colaborador enviar evidencia de cámara, con fecha y hora oportunamente, para considerará descuento.", "pobj": 1}, {"sub": "Rotación café de experiencia", "met": "Correcto manejo:\nSedes luxury tendrán en cajones: 2 bolsas de 1/4 de kilo por cada tipo de café que se abre sólo para llenar los 6 tubos de ensayo donde se dosificará la dosis a usar para 1 extracción de café, para los pedidos diarios. \n\nSedes premium tendrán en cajones: 3 bolsas de 1/4 de kilo de café que se abre sólo para llenar los 3 tubos de ensayo donde se dosificará la dosis a usar para 1 extracción de café, para los pedidos diarios. \n\nTodo el café que se merme, acumular en bolsa de 1kg.\nMermar en el sistema:\n1. Tipo de café.\n2. Motivo de merma: vencimiento, mala calidad, etc.\n3. Cantidad a mermar", "pobj": 1}, {"sub": "Recepción de despachos", "met": "Revisión exacta de lo que llega con la guía y firma del responsable. \nRevisión de que lleguen en buen estado y fechas de vencimiento sino reportarlo en el correo.\nReporte por correo de los faltantes o sobrantes que lleguen en el despacho.", "pobj": 1}]}, {"lego": "EXPERIENCIA AL CLIENTE", "subs": [{"sub": "Horario de atención", "met": "La tienda esta preparada para la atención al público y abre en el horario establecido.\nLlegar a superar el 70% de cumplimiento en el mes.", "pobj": 1}, {"sub": "Presentación", "met": "La presentación del producto cumple con el estándar según recetario y se entregan con los complementos requeridos: posavasos, cubiertos, servilletero, azúcar, etc.", "pobj": 1}, {"sub": "Código de vestimenta", "met": "Los colaboradores cumplen con el código de vestimenta.\nUniforme completo e higiene personal: uñas cortas sin esmalte, afeitados, sin accesorios (pulseras, aretes, pines, piercing, etc), ni maquillaje sobrecargado (no pestañas postizas).", "pobj": 1}, {"sub": "Exhibidor vitrina", "met": "Los productos son exhibidos correctamente según el estándar y correctamente rotulados.\nSe mantiene abastecido.\nLlegar a superar el 70% de cumplimiento en el mes.", "pobj": 1}, {"sub": "Exhibidor de merch", "met": "Se encuentran ordenados, limpios y abastecidos.\nNo se presentan productos vencidos, ni en mal estado.\nLlegar a superar el 70% de cumplimiento en el mes.", "pobj": 1}, {"sub": "Muebles", "met": "Mostrador, mesas, sillas, pantallas, menú board: No están deteriorados, sucios, no presentan esquinas cortantes.", "pobj": 1}, {"sub": "Música", "met": "La música está en el volumen adecuado y se reproduce el playlist Don Salazar.", "pobj": 1}, {"sub": "Pasos de servicio", "met": "Siempre en posición para atender al cliente y se cumple con los pasos de servicio. \nDemuestra sonrisa y amabilidad al cliente.\nExplica el contenido de la carta y se realiza venta sugestiva de campañas o promociones vigentes.", "pobj": 1}, {"sub": "Recuperación del cliente", "met": "De ser el caso, los problemas de los clientes son manejados de acuerdo al estándar y se da solución oportuna.", "pobj": 1}, {"sub": "NPS", "met": "Cumplen con la recopilación de mínimo 30 encuestas al mes sobre la satisfacción al cliente.", "pobj": 1}]}, {"lego": "ADMINISTRATIVO", "subs": [{"sub": "Horario de colaboradores", "met": "Cumple con el envío de horario y consideraciones hasta el último viernes del mes.\nRegistro de asistencia y puntualidad supera el 70% de cumplimiento en el mes.", "pobj": 1}, {"sub": "Book de revisión", "met": "Se realiza el correcto llenado desde la última visita.\nLlegar a superar el 70% de cumplimiento en el mes.", "pobj": 1}, {"sub": "File de documentos importantes", "met": "1.Licencia de funcionamiento visible, vigente. Verificar la razón social y dirección.\n2.Certificado de defensa civil visible, vigente. Verificar la razón social y dirección.\n3.El local cuenta con el Plano de Señalización y Evacuación:\n- Está exhibido en un lugar visible dentro del lugar de trabajo.\n- Cada nivel debe contar con su respectivo plano.\n- Debe presentar la distribución correcta de la tienda o almacén.\n- Se actualiza anualmente o cuando haya algún cambio en la infraestructura de la tienda (Lo que suceda primero).\n- Debe coincidir la cantidad de mesas y sillas que debe tener el local.\n4. Anuncios publicitarios: La tienda debe contar con la documentación de anuncios publicitarios para los locales que son puerta a calle.\n5. Certificado de fumigación\n6. Certificado de extintores\n7. Certificado de mantenimiento de filtro de agua\n8. Certificado de mantenimiento de trampa de grasa", "pobj": 1}, {"sub": "File de colaboradores", "met": "Correcto llenado de la ficha de cada colaborador de la sede.\nContar con carnet de sanidad del distrito o de lima metropolitana vigente.", "pobj": 1}, {"sub": "Luces de emergencias", "met": "Operativas, sin acumulaciones de polvo ni residuos, en buen estado.\n(Probar encendiéndolas con el botón rojo de la parte derecha o en uno de los tableros eléctricos hay una llave).", "pobj": 1}, {"sub": "Extintores", "met": "El local cumple con los puntos siguientes:\n1. Todos los extintores cuentan con tarjeta de inspección debidamente llenada de manera legible por el encargado de sede.\n2. Extintores completos, no percutados, vigentes, de fácil visibilidad y rápido acceso. (Sin cajas, jabas u otros objetos que impidan la visión de los mismos, no usados como colgadores de ropa o accesorios, etc.)\n3.  El extintor de repuesto no requiere cartilla de inspección, pero si debe ser del mismo tamaño y tipo del extintor original.", "pobj": 1}, {"sub": "Letreros municipales", "met": "El local cumple con mantener en un lugar visible los letreros correspondientes a su zona, tales como: No Discriminación, Atención preferente, no acoso, entre otros.", "pobj": 1}, {"sub": "Libro de reclamaciones", "met": "Se tienen las siguientes consideraciones:\n1. Se cuenta con el Libro de Reclamaciones.\n2. Se tiene el cartel publicado de Libro de Reclamaciones\n3. El libro esta en buen estado y en un lugar adecuado.\n4. Realizar el correcto registro y envío de información si es llenado por el cliente.", "pobj": 1}, {"sub": "Botiquín de emergencia", "met": "El Botiquín de Primeros Auxilios cumple los siguientes puntos:\n1. Se encuentra en un lugar visible dentro del lugar de trabajo y conocido por todos los colaboradores.\n2. El botiquín cuenta con todos los insumos de primeros auxilios, las medidas y cantidad de insumos deben ser exactamente las especificadas en el check list, se encuentra lleno y al día.\n3. Los insumos no pueden encontrarse vencidos ni abiertos ya que vienen sellados y esterilizados.", "pobj": 1}, {"sub": "Tableros eléctricos", "met": "El local cumple con los siguientes puntos:\n1. Tablero eléctrico se mantiene cerrado.\n2. El interior del tablero eléctrico se encuentra libre de cables expuestos.\n3. Los tableros eléctricos son de fácil y rápido acceso (Sin cajas, jabas u otros objetos que impidan llegar a el)", "pobj": 1}]}]}.legos;
-const SEDES = {"Camelias":"","Fontana":"","Higuereta":"","Jockey":"","Pardo":"","Puntamar":"","Salaverry":"","San Miguel":"","UP":""};
-const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-const state = {};      // "li-si" -> {check, obs}
-let flat = [];
-const EVID = {};       // li -> [dataURL,...]
+const LEGOS=[{"lego": "DINERO", "subs": [{"sub": "Arqueo de caja", "met": "No presenta diferencias de dinero ni en POS.\nNo presenta billetes falsos.\nDe encontrarse dinero fuera de la caja se considerara como sobrante.", "pobj": 1}, {"sub": "Cuadre de caja AM y PM", "met": "Realizó el correcto registro de billetes y monedas en cada cuadre de caja.", "pobj": 1}, {"sub": "Boletas y facturas", "met": "Caja, POS y tiquetera funcionan correctamente.\nLa sede cumple con emisión y entrega del comprobante, no omite su entrega a los clientes.", "pobj": 1}, {"sub": "Depósito", "met": "Se realizó el depósito en el banco al llegar al monto máximo de 1000 soles.\nSe debe quedar con el monto en efectivo de caja chica según la sede.", "pobj": 1}, {"sub": "Caja chica", "met": "Cumple con el registro y envío cada domingo el consolidado de caja chica correspondiente al mes.\nSolo se aceptarán facturas para compras y en caso de movilidades el ticket que indica ruta, monto y fecha.\nNo debe superar el monto presupuestado en soles por sede al mes.", "pobj": 1}, {"sub": "Consumo de influencers e inversionistas", "met": "Cumple con el correcto registro en el sistema, envío de evidencia y etiqueta por el grupo de Whatsapp de sede.", "pobj": 1}, {"sub": "Anulaciones", "met": "No realiza más de 5 anulaciones al mes entre todos los colaboradores de la sede.", "pobj": 1}, {"sub": "Propinas", "met": "Las propinas están debidamente separadas dentro de la caja y registradas en el sistema.", "pobj": 1}, {"sub": "Billetes falsos", "met": "Ante la recepción de un billete aplica correctamente el procedimiento de identificación de billete falso en el siguiente link:\nhttps://www.bcrp.gob.pe/apps/numerario.html", "pobj": 1}, {"sub": "Alcance de ventas", "met": "Cuenta con el formato de avance de ventas abierto en caja y los colaboradores conocen su meta del día.", "pobj": 1}]}, {"lego": "HIGUIENE Y SANIDAD", "subs": [{"sub": "Tiempo de vida", "met": "Los productos se encuentran dentro de su tiempo de vida útil, no se encuentran vencidos, adulterados, ni mal rotulados.\nLos tapers o insumos que pertenezcan al personal deben tener la etiqueta de colaboradores y con la fecha de vencimimento del día.", "pobj": 1}, {"sub": "Área de producción", "met": "Los colaboradores cumplen con estándares bioseguridad: usa cofia cubriendo orejas, tapabocas y curbriendo la nariz, guantes mientras manipulan alimentos.\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Salón, baños y terrazas", "met": "Salón:\nLas paredes, pisos y zócalos de todas las áreas del local están libres de suciedad acumulada.\n\nBaños:\nLos inodoros/urinarios se encuentran limpios, sin mal olor.\nLavamanos, espejo, dispensadores y secamanos se encuentran sin acumulaciones de suciedad ni manchas.\nEl lavamanos se encuentra correctamente abastecido, jabón, gel y papel toalla en dispensadores.\nChecklist de limpieza ejecutado de acuerdo al horario.\n\nÁrea externa:\nTerraza, jardines, aceras, letreros o piezas publicitarias: bien mantenidas, limpios, si desperdicios, buena apariencia.\n\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Limpieza de áreas internas", "met": "Paredes, pisos y zocalos de todo el local se encuentran sin acumulación de suciedad.\nAplica para las siguientes zonas: \nAlmacenes\nCajones y muebles de almacenaje\nZona producción\nCuarto de residuos\nSalón para taller\nCounter\n\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Limpieza de unidades de conservación", "met": "Las unidades de refrigeración, conservación y congelación se encuentran limpias, sin acumulación de grasa, polvo u otros.\nPuertas, manijas, empaquetaduras, ruedas limpias. \nNo se observa oxido en interior.\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Área de limpieza", "met": "Los utensilios de limpieza como trapeador, escoba, tachos, recogedor, carrito de limpieza y cartel de piso mojado están limpios, en buenas condiciones y libre de olores.\n\nLas pozas de lavado se encuentran libres de acumulación, manchas, caños limpios, no oxidados y en buen estado.\n\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Menaje, smallware e instrumentos", "met": "Deben encontrarse sin acumulaciones de suciedad, no oxidados, sin residuos o restos de etiqueta.\nNo se observa contaminación cruzada, física, química ni biológica.", "pobj": 1}, {"sub": "Temperatura de unidades de conservación", "met": "Los alimentos congelados se encuentran en la cámara de congelación y están de acuerdo a los estándares de temperatura ≤-18°C.\n\nLos productos refrigerados se encuentran en la cámara de refrigeración y  mantienen en rango de temperatura seguro ≤4°C.", "pobj": 1}, {"sub": "Hielera y trampa de grasa", "met": "Realizan la correcta limpieza según cronograma.\nNo tiene acumulaciones de polvo, no están oxidados.\nCuenta con sus certificados al día.", "pobj": 1}, {"sub": "Químicos y paños", "met": "Los productos químicos y materiales de limpieza se almacenan lejos de los alimentos, en una zona exclusiva para su ubicación, correctamente almacenados (en su envase original),  debidamente rotulados, limpios y en buen estado.", "pobj": 1}]}, {"lego": "INVENTARIO", "subs": [{"sub": "Inventario", "met": "Todos los domingos se debe registrar el inventario que corresponda en excel y en el sistema.\n", "pobj": 1}, {"sub": "Mermas y salidas", "met": "Cumple con el registro de merma en formato excel y sistema.\nCumple con el envío del formato cada domingo por correo al área de operaciones.\nEn el caso de merma por error de receta o mala manipulación enviar evidencia de cámara, con fecha y hora, caso contrario se considerará descuento al responsable.\nLlegar a superar el 70% de cumplimiento de registro de mermas y salidas en el mes.", "pobj": 1}, {"sub": "Consumo interno", "met": "Cumple con el correcto registro en sistema y hace cumplir que los colaboradores de la sede y administrativo registren su consumo interno.", "pobj": 1}, {"sub": "Traspasos entre sedes", "met": "Registrar correctamente los traspasos en el sistema que se hayan registrados en el formato de caja chica.\nCumplimiento de más del 70% al mes.", "pobj": 1}, {"sub": "Almacenamiento", "met": "Los productos son correctamente almacenados de acuerdo al FIFO y sin poner en riesgo la condición del insumo.\nProductos seccionados por categorías para evitar contaminación y poder realizar correcto conteo.\nProductos correctamente sellado o cerrados y en buen estado.\nMantener los insumos por encima de los 15 cm del suelo.", "pobj": 1}, {"sub": "Lockers", "met": "Cuentan con espacio para el almacenaje de mochilas. \nEstos deben estar correctamente instalados, no oxidados, deteriorados o piezas faltantes.", "pobj": 1}, {"sub": "Balanzas, máquinas y métodos", "met": "Operativas, sin acumulaciones de suciedad, roturas o piezas faltantes.\nEn caso de estar inoperativas haber comunicado oportunamente por correo a operaciones.", "pobj": 1}, {"sub": "Menaje y cristalería", "met": "Mantener correcto estado y cantidad para la correcta atención al cliente.\nComunicar oportunamente por correo a operaciones cuando se descuenta un material.\nEn el caso de mala manipulación del cliente enviar evidencia de cámara, con fecha y hora oportunamente.\nEn el caso de mala manipulación del colaborador enviar evidencia de cámara, con fecha y hora oportunamente, para considerará descuento.", "pobj": 1}, {"sub": "Rotación café de experiencia", "met": "Correcto manejo:\nSedes luxury tendrán en cajones: 2 bolsas de 1/4 de kilo por cada tipo de café que se abre sólo para llenar los 6 tubos de ensayo donde se dosificará la dosis a usar para 1 extracción de café, para los pedidos diarios. \n\nSedes premium tendrán en cajones: 3 bolsas de 1/4 de kilo de café que se abre sólo para llenar los 3 tubos de ensayo donde se dosificará la dosis a usar para 1 extracción de café, para los pedidos diarios. \n\nTodo el café que se merme, acumular en bolsa de 1kg.\nMermar en el sistema:\n1. Tipo de café.\n2. Motivo de merma: vencimiento, mala calidad, etc.\n3. Cantidad a mermar", "pobj": 1}, {"sub": "Recepción de despachos", "met": "Revisión exacta de lo que llega con la guía y firma del responsable. \nRevisión de que lleguen en buen estado y fechas de vencimiento sino reportarlo en el correo.\nReporte por correo de los faltantes o sobrantes que lleguen en el despacho.", "pobj": 1}]}, {"lego": "EXPERIENCIA AL CLIENTE", "subs": [{"sub": "Horario de atención", "met": "La tienda esta preparada para la atención al público y abre en el horario establecido.\nLlegar a superar el 70% de cumplimiento en el mes.", "pobj": 1}, {"sub": "Presentación", "met": "La presentación del producto cumple con el estándar según recetario y se entregan con los complementos requeridos: posavasos, cubiertos, servilletero, azúcar, etc.", "pobj": 1}, {"sub": "Código de vestimenta", "met": "Los colaboradores cumplen con el código de vestimenta.\nUniforme completo e higiene personal: uñas cortas sin esmalte, afeitados, sin accesorios (pulseras, aretes, pines, piercing, etc), ni maquillaje sobrecargado (no pestañas postizas).", "pobj": 1}, {"sub": "Exhibidor vitrina", "met": "Los productos son exhibidos correctamente según el estándar y correctamente rotulados.\nSe mantiene abastecido.\nLlegar a superar el 70% de cumplimiento en el mes.", "pobj": 1}, {"sub": "Exhibidor de merch", "met": "Se encuentran ordenados, limpios y abastecidos.\nNo se presentan productos vencidos, ni en mal estado.\nLlegar a superar el 70% de cumplimiento en el mes.", "pobj": 1}, {"sub": "Muebles", "met": "Mostrador, mesas, sillas, pantallas, menú board: No están deteriorados, sucios, no presentan esquinas cortantes.", "pobj": 1}, {"sub": "Música", "met": "La música está en el volumen adecuado y se reproduce el playlist Don Salazar.", "pobj": 1}, {"sub": "Pasos de servicio", "met": "Siempre en posición para atender al cliente y se cumple con los pasos de servicio. \nDemuestra sonrisa y amabilidad al cliente.\nExplica el contenido de la carta y se realiza venta sugestiva de campañas o promociones vigentes.", "pobj": 1}, {"sub": "Recuperación del cliente", "met": "De ser el caso, los problemas de los clientes son manejados de acuerdo al estándar y se da solución oportuna.", "pobj": 1}, {"sub": "NPS", "met": "Cumplen con la recopilación de mínimo 30 encuestas al mes sobre la satisfacción al cliente.", "pobj": 1}]}, {"lego": "ADMINISTRATIVO", "subs": [{"sub": "Horario de colaboradores", "met": "Cumple con el envío de horario y consideraciones hasta el último viernes del mes.\nRegistro de asistencia y puntualidad supera el 70% de cumplimiento en el mes.", "pobj": 1}, {"sub": "Book de revisión", "met": "Se realiza el correcto llenado desde la última visita.\nLlegar a superar el 70% de cumplimiento en el mes.", "pobj": 1}, {"sub": "File de documentos importantes", "met": "1.Licencia de funcionamiento visible, vigente. Verificar la razón social y dirección.\n2.Certificado de defensa civil visible, vigente. Verificar la razón social y dirección.\n3.El local cuenta con el Plano de Señalización y Evacuación:\n- Está exhibido en un lugar visible dentro del lugar de trabajo.\n- Cada nivel debe contar con su respectivo plano.\n- Debe presentar la distribución correcta de la tienda o almacén.\n- Se actualiza anualmente o cuando haya algún cambio en la infraestructura de la tienda (Lo que suceda primero).\n- Debe coincidir la cantidad de mesas y sillas que debe tener el local.\n4. Anuncios publicitarios: La tienda debe contar con la documentación de anuncios publicitarios para los locales que son puerta a calle.\n5. Certificado de fumigación\n6. Certificado de extintores\n7. Certificado de mantenimiento de filtro de agua\n8. Certificado de mantenimiento de trampa de grasa", "pobj": 1}, {"sub": "File de colaboradores", "met": "Correcto llenado de la ficha de cada colaborador de la sede.\nContar con carnet de sanidad del distrito o de lima metropolitana vigente.", "pobj": 1}, {"sub": "Luces de emergencias", "met": "Operativas, sin acumulaciones de polvo ni residuos, en buen estado.\n(Probar encendiéndolas con el botón rojo de la parte derecha o en uno de los tableros eléctricos hay una llave).", "pobj": 1}, {"sub": "Extintores", "met": "El local cumple con los puntos siguientes:\n1. Todos los extintores cuentan con tarjeta de inspección debidamente llenada de manera legible por el encargado de sede.\n2. Extintores completos, no percutados, vigentes, de fácil visibilidad y rápido acceso. (Sin cajas, jabas u otros objetos que impidan la visión de los mismos, no usados como colgadores de ropa o accesorios, etc.)\n3.  El extintor de repuesto no requiere cartilla de inspección, pero si debe ser del mismo tamaño y tipo del extintor original.", "pobj": 1}, {"sub": "Letreros municipales", "met": "El local cumple con mantener en un lugar visible los letreros correspondientes a su zona, tales como: No Discriminación, Atención preferente, no acoso, entre otros.", "pobj": 1}, {"sub": "Libro de reclamaciones", "met": "Se tienen las siguientes consideraciones:\n1. Se cuenta con el Libro de Reclamaciones.\n2. Se tiene el cartel publicado de Libro de Reclamaciones\n3. El libro esta en buen estado y en un lugar adecuado.\n4. Realizar el correcto registro y envío de información si es llenado por el cliente.", "pobj": 1}, {"sub": "Botiquín de emergencia", "met": "El Botiquín de Primeros Auxilios cumple los siguientes puntos:\n1. Se encuentra en un lugar visible dentro del lugar de trabajo y conocido por todos los colaboradores.\n2. El botiquín cuenta con todos los insumos de primeros auxilios, las medidas y cantidad de insumos deben ser exactamente las especificadas en el check list, se encuentra lleno y al día.\n3. Los insumos no pueden encontrarse vencidos ni abiertos ya que vienen sellados y esterilizados.", "pobj": 1}, {"sub": "Tableros eléctricos", "met": "El local cumple con los siguientes puntos:\n1. Tablero eléctrico se mantiene cerrado.\n2. El interior del tablero eléctrico se encuentra libre de cables expuestos.\n3. Los tableros eléctricos son de fácil y rápido acceso (Sin cajas, jabas u otros objetos que impidan llegar a el)", "pobj": 1}]}];const SEDES=["Camelias", "Fontana", "Higuereta", "Jockey", "Pardo", "Puntamar", "Salaverry", "San Miguel", "UP"];const MESES=["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+// Imagenes opcionales (se incrustan luego): dejar '' si no hay.
+const LOGO_DATAURL="";   // logo Don Salazar (PNG dataURL)
+const FIRMA_DATAURL="";  // firma estilo correo (PNG dataURL)
+const state={};let flat=[];let evidImgs=[]; // arreglo unico de fotos (dataURL)
 
 function init(){
-  const sSel=document.getElementById('mSede');
-  Object.keys(SEDES).forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sSel.appendChild(o);});
-  sSel.onchange=()=>{document.getElementById('mEnc').value=SEDES[sSel.value]||'';};
-  const mSel=document.getElementById('mMes');
-  MESES.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;mSel.appendChild(o);});
-  const now=new Date(); mSel.value=MESES[now.getMonth()];
-  document.getElementById('mFecha').value=now.toISOString().slice(0,10);
-  document.getElementById('mEnc').value=SEDES[sSel.value]||'';
-
-  const cont=document.getElementById('legos');
-  const evc=document.getElementById('eviBoxes');
-  LEGOS.forEach((L,li)=>{
-    EVID[li]=[];
-    const box=document.createElement('div');box.className='lego';
-    box.innerHTML=`<div class="lego-head"><h2>${L.lego}</h2><span class="lego-badge" id="badge-${li}">—</span></div><div class="lego-body" id="body-${li}"></div>`;
-    cont.appendChild(box);
-    const body=box.querySelector('#body-'+li);
-    L.subs.forEach((S,si)=>{
-      const key=li+'-'+si;
-      state[key]={check:null,obs:''};
-      flat.push({li,si,key,lego:L.lego,sub:S.sub,met:S.met,pobj:(S.pobj==null?1:S.pobj)});
-      const d=document.createElement('div');d.className='sub';
-      d.innerHTML=`
-        <div class="sub-top">
-          <div style="flex:1">
-            <div class="sub-name">${S.sub}</div>
-            <span class="met-toggle" onclick="toggleMet('${key}')">ver metodología</span>
-            <div class="sub-met" id="met-${key}">${(S.met||'').replace(/</g,'&lt;')}</div>
-          </div>
-          <div class="checks">
-            <div class="chk" id="c-${key}" onclick="setChk('${key}','Cumple')">Cumple</div>
-            <div class="chk" id="n-${key}" onclick="setChk('${key}','No cumple')">No cumple</div>
-            <div class="chk" id="a-${key}" onclick="setChk('${key}','N.A.')">N.A.</div>
-          </div>
-        </div>
-        <div class="sub-extra">
-          <textarea id="obs-${key}" placeholder="Observación / comentario..." oninput="state['${key}'].obs=this.value"></textarea>
-        </div>`;
-      body.appendChild(d);
-    });
-    const eb=document.createElement('div');eb.className='evi-lego';
-    eb.innerHTML=`<div class="evi-head"><b>${L.lego}</b><span class="cnt" id="cnt-${li}">0 fotos</span></div>
-      <div class="evi-body" id="evi-${li}">
-        <label class="addimg">＋ Agregar fotos<input type="file" accept="image/*" multiple style="display:none" onchange="addEvid(${li},event)"></label>
-      </div>`;
-    evc.appendChild(eb);
-  });
-  recalc();
+ const sSel=document.getElementById('mSede');SEDES.forEach(s=>sSel.add(new Option(s,s)));
+ const mSel=document.getElementById('mMes');MESES.forEach(m=>mSel.add(new Option(m,m)));
+ const now=new Date();mSel.value=MESES[now.getMonth()];document.getElementById('mFecha').value=now.toISOString().slice(0,10);
+ const cont=document.getElementById('legos');
+ LEGOS.forEach((L,li)=>{
+   const box=document.createElement('div');box.className='lego';
+   box.innerHTML=`<div class="lego-head"><h2>${L.lego}</h2><span class="lego-badge" id="badge-${li}">—</span></div><div id="body-${li}"></div>`;
+   cont.appendChild(box);const body=box.querySelector('#body-'+li);
+   L.subs.forEach((S,si)=>{const key=li+'-'+si;state[key]={check:null,obs:''};
+     flat.push({li,si,key,lego:L.lego,sub:S.sub,met:S.met,pobj:(S.pobj==null?1:S.pobj)});
+     const d=document.createElement('div');d.className='sub';
+     d.innerHTML=`<div class="sub-top"><div style="flex:1">
+       <div class="sub-name">${S.sub}</div>
+       <span class="met-toggle" onclick="toggleMet('${key}')">ver metodología</span>
+       <div class="sub-met" id="met-${key}">${(S.met||'').replace(/</g,'&lt;')}</div></div>
+       <div class="checks">
+         <div class="chk" id="c-${key}" onclick="setChk('${key}','Cumple')">Cumple</div>
+         <div class="chk" id="n-${key}" onclick="setChk('${key}','No cumple')">No cumple</div>
+         <div class="chk" id="a-${key}" onclick="setChk('${key}','N.A.')">N.A.</div></div></div>
+       <div class="sub-extra"><textarea id="obs-${key}" placeholder="Observación / comentario..." oninput="state['${key}'].obs=this.value"></textarea></div>`;
+     body.appendChild(d);});
+ });
+ recalc();
 }
 function toggleMet(k){const e=document.getElementById('met-'+k);e.style.display=e.style.display==='block'?'none':'block';}
-function setChk(k,v){
-  state[k].check=(state[k].check===v?null:v);
-  const c=document.getElementById('c-'+k),n=document.getElementById('n-'+k),a=document.getElementById('a-'+k);
-  c.className='chk';n.className='chk';a.className='chk';
-  if(state[k].check==='Cumple')c.classList.add('sel-c');
-  if(state[k].check==='No cumple')n.classList.add('sel-n');
-  if(state[k].check==='N.A.')a.classList.add('sel-na');
-  recalc();
-}
-function addEvid(li,ev){
-  const files=[...ev.target.files];
-  files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=e=>{
-      const img=new Image();
-      img.onload=()=>{
-        const max=1100;let w=img.width,h=img.height;
-        if(w>max){h=h*max/w;w=max;}
-        const cv=document.createElement('canvas');cv.width=w;cv.height=h;
-        cv.getContext('2d').drawImage(img,0,0,w,h);
-        EVID[li].push(cv.toDataURL('image/jpeg',0.72));renderEvid(li);
-      };img.src=e.target.result;
-    };r.readAsDataURL(f);
-  });
-  ev.target.value='';
-}
-function renderEvid(li){
-  const row=document.getElementById('evi-'+li);
-  row.querySelectorAll('.thumb').forEach(t=>t.remove());
-  EVID[li].forEach((d,i)=>{
-    const t=document.createElement('div');t.className='thumb';
-    t.innerHTML=`<img src="${d}"><span class="num">${i+1}</span><button class="x" onclick="rmEvid(${li},${i})">✕</button>`;
-    row.insertBefore(t,row.lastChild);
-  });
-  document.getElementById('cnt-'+li).textContent=EVID[li].length+' foto'+(EVID[li].length===1?'':'s');
-}
-function rmEvid(li,i){EVID[li].splice(i,1);renderEvid(li);}
-
-function legoScore(li){
-  let got=0,tot=0,answered=0,total=0;
-  flat.filter(f=>f.li===li).forEach(f=>{
-    total++;const s=state[f.key];
-    if(s.check){answered++;tot+=f.pobj;if(s.check!=='No cumple')got+=f.pobj;}
-  });
-  return {got,tot,answered,total};
-}
-function recalc(){
-  let G=0,T=0;
-  LEGOS.forEach((L,li)=>{const r=legoScore(li);G+=r.got;T+=r.tot;
-    const pct=r.tot?Math.round(100*r.got/r.tot):0;
-    document.getElementById('badge-'+li).textContent=`${r.answered}/${r.total} · ${pct}%`;});
-  document.getElementById('scoreBig').textContent=(T?Math.round(100*G/T):0)+'%';
-}
-
+function setChk(k,v){state[k].check=(state[k].check===v?null:v);
+ ['c','n','a'].forEach(p=>document.getElementById(p+'-'+k).className='chk');
+ if(state[k].check==='Cumple')document.getElementById('c-'+k).classList.add('sel-c');
+ if(state[k].check==='No cumple')document.getElementById('n-'+k).classList.add('sel-n');
+ if(state[k].check==='N.A.')document.getElementById('a-'+k).classList.add('sel-na');recalc();}
+function addEvid(ev){[...ev.target.files].forEach(f=>{const r=new FileReader();
+ r.onload=e=>{const img=new Image();img.onload=()=>{const max=1100;let w=img.width,h=img.height;
+   if(w>max){h=h*max/w;w=max;}const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+   cv.getContext('2d').drawImage(img,0,0,w,h);evidImgs.push(cv.toDataURL('image/jpeg',0.72));renderEvid();};img.src=e.target.result;};
+ r.readAsDataURL(f);});ev.target.value='';}
+function renderEvid(){const row=document.getElementById('eviBody');
+ row.querySelectorAll('.thumb').forEach(t=>t.remove());
+ evidImgs.forEach((d,i)=>{const t=document.createElement('div');t.className='thumb';
+   t.innerHTML=`<img src="${d}"><span class="num">${i+1}</span><div class="ctl"><button onclick="moveEvid(${i},-1)">◀</button><button onclick="rmEvid(${i})">✕</button><button onclick="moveEvid(${i},1)">▶</button></div>`;
+   row.insertBefore(t,row.lastChild);});}
+function moveEvid(i,dir){const j=i+dir;if(j<0||j>=evidImgs.length)return;const t=evidImgs[i];evidImgs[i]=evidImgs[j];evidImgs[j]=t;renderEvid();}
+function rmEvid(i){evidImgs.splice(i,1);renderEvid();}
+function legoScore(li){let got=0,tot=0,answered=0,total=0;
+ flat.filter(f=>f.li===li).forEach(f=>{total++;const s=state[f.key];if(s.check){answered++;tot+=f.pobj;if(s.check!=='No cumple')got+=f.pobj;}});
+ return{got,tot,answered,total};}
+function recalc(){let G=0,T=0;LEGOS.forEach((L,li)=>{const r=legoScore(li);G+=r.got;T+=r.tot;
+ document.getElementById('badge-'+li).textContent=`${r.answered}/${r.total} · ${r.tot?Math.round(100*r.got/r.tot):0}%`;});
+ document.getElementById('scoreBig').textContent=(T?Math.round(100*G/T):0)+'%';}
 function meta(){return{sede:mSede.value,mes:mMes.value,fecha:mFecha.value,visita:mVisita.value,enc:mEnc.value};}
 function fnameBase(){const m=meta();return `${m.visita.toUpperCase()} - ${m.sede} - ${(m.mes||'').toUpperCase()} 2026`;}
-
-function exportXLS(){
-  const m=meta();
-  const rows=[["Sede","Mes","Visita","Lego","Sub Lego","Metodología","Puntaje objetivo","Check","Puntaje","Observación"]];
-  flat.forEach(f=>{const s=state[f.key];const chk=s.check||"";
-    const pts=s.check?(s.check==='No cumple'?0:f.pobj):"";
-    rows.push([m.sede,m.mes,m.visita,f.lego,f.sub,f.met,f.pobj,chk,pts,s.obs||""]);});
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"DETALLE VISITA");
-  XLSX.writeFile(wb,fnameBase()+".xlsx");
-}
-
-function saveProgress(){
-  const blob=new Blob([JSON.stringify({meta:meta(),state,evid:EVID})],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fnameBase()+".json";a.click();
-}
-function loadProgress(ev){
-  const f=ev.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=e=>{
-    try{
-      const o=JSON.parse(e.target.result);
-      if(o.meta){mSede.value=o.meta.sede;mMes.value=o.meta.mes;mFecha.value=o.meta.fecha;mVisita.value=o.meta.visita;mEnc.value=o.meta.enc;}
-      Object.keys(o.state||{}).forEach(k=>{if(state[k])state[k]=o.state[k];});
-      flat.forEach(f=>{const s=state[f.key];document.getElementById('obs-'+f.key).value=s.obs||'';
-        const c=document.getElementById('c-'+f.key),n=document.getElementById('n-'+f.key),a=document.getElementById('a-'+f.key);
-        c.className='chk';n.className='chk';a.className='chk';
-        if(s.check==='Cumple')c.classList.add('sel-c');
-        if(s.check==='No cumple')n.classList.add('sel-n');
-        if(s.check==='N.A.')a.classList.add('sel-na');});
-      if(o.evid)LEGOS.forEach((L,li)=>{EVID[li]=o.evid[li]||[];renderEvid(li);});
-      recalc();alert('Avance cargado.');
-    }catch(err){alert('Archivo inválido');}
-  };r.readAsText(f);
-}
+function exportXLS(){const m=meta();
+ const rows=[["Sede","Mes","Visita","Lego","Sub Lego","Metodología","Puntaje objetivo","Check","Puntaje","Observación"]];
+ flat.forEach(f=>{const s=state[f.key];rows.push([m.sede,m.mes,m.visita,f.lego,f.sub,f.met,f.pobj,s.check||'',s.check?(s.check==='No cumple'?0:f.pobj):'',s.obs||'']);});
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),"DETALLE VISITA");XLSX.writeFile(wb,fnameBase()+".xlsx");}
+function saveProgress(){const blob=new Blob([JSON.stringify({meta:meta(),state,evid:evidImgs})],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fnameBase()+".json";a.click();}
+function loadProgress(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();
+ r.onload=e=>{try{const o=JSON.parse(e.target.result);
+   if(o.meta){mSede.value=o.meta.sede;mMes.value=o.meta.mes;mFecha.value=o.meta.fecha;mVisita.value=o.meta.visita;mEnc.value=o.meta.enc;}
+   Object.keys(o.state||{}).forEach(k=>{if(state[k])state[k]=o.state[k];});
+   flat.forEach(f=>{const s=state[f.key];document.getElementById('obs-'+f.key).value=s.obs||'';
+     ['c','n','a'].forEach(p=>document.getElementById(p+'-'+f.key).className='chk');
+     if(s.check==='Cumple')document.getElementById('c-'+f.key).classList.add('sel-c');
+     if(s.check==='No cumple')document.getElementById('n-'+f.key).classList.add('sel-n');
+     if(s.check==='N.A.')document.getElementById('a-'+f.key).classList.add('sel-na');});
+   evidImgs=o.evid||[];renderEvid();recalc();alert('Avance cargado.');
+ }catch(err){alert('Archivo inválido');}};r.readAsText(f);}
 
 function exportPDF(){
-  const {jsPDF}=window.jspdf;const doc=new jsPDF('p','mm','a4');
-  const m=meta();const PW=210;const coffee=[74,46,30],coffee2=[111,78,55],gold=[200,163,91];
-  doc.setFillColor(...coffee);doc.rect(0,0,PW,46,'F');
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(22);
-  doc.text('INFORME DE VISITA DE OPERACIONES',105,20,{align:'center'});
-  doc.setFont('helvetica','italic');doc.setFontSize(11);doc.setTextColor(...gold);
-  doc.text('Don Salazar Coffee — Café con Sabor a Perú',105,30,{align:'center'});
-  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(255,255,255);
-  doc.text(`${m.sede}  ·  ${m.visita}  ·  ${m.mes} 2026`,105,39,{align:'center'});
-  let y=58;doc.setTextColor(40,30,20);
-  const info=[['Sede',m.sede],['Encargado de sede',m.enc],['Mes',m.mes],['Fecha de visita',m.fecha],['Visita',m.visita]];
-  doc.autoTable({startY:y,theme:'plain',body:info,styles:{fontSize:11,cellPadding:1.5},
-    columnStyles:{0:{fontStyle:'bold',textColor:coffee2,cellWidth:55},1:{textColor:[40,30,20]}}});
-  y=doc.lastAutoTable.finalY+6;
-  let G=0,T=0;const legoRows=[];
-  LEGOS.forEach((L,li)=>{const r=legoScore(li);G+=r.got;T+=r.tot;
-    legoRows.push([L.lego,`${r.answered}/${r.total}`,(r.tot?Math.round(100*r.got/r.tot):0)+'%']);});
-  const pct=T?Math.round(100*G/T):0;
-  doc.setFillColor(...gold);doc.roundedRect(14,y,55,26,3,3,'F');
-  doc.setTextColor(59,36,21);doc.setFont('helvetica','bold');doc.setFontSize(26);
-  doc.text(pct+'%',41.5,y+14,{align:'center'});
-  doc.setFontSize(9);doc.text('NOTA GENERAL',41.5,y+21,{align:'center'});
-  doc.autoTable({startY:y,margin:{left:75},tableWidth:121,head:[['Lego','Cumpl.','Nota']],body:legoRows,
-    theme:'grid',headStyles:{fillColor:coffee2,textColor:255,fontSize:10},
-    bodyStyles:{fontSize:10},columnStyles:{1:{halign:'center'},2:{halign:'center',fontStyle:'bold'}}});
-  y=Math.max(doc.lastAutoTable.finalY,y+26)+10;
-  doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...coffee);
-  doc.text('Detalle de cumplimiento',14,y);y+=3;
-  LEGOS.forEach((L,li)=>{
-    const body=L.subs.map((S,si)=>{const s=state[li+'-'+si];return [S.sub,s.check||'—',s.obs||''];});
-    doc.autoTable({startY:y+4,head:[[{content:L.lego,colSpan:3}]],
-      theme:'grid',headStyles:{fillColor:coffee2,textColor:255,fontSize:11,halign:'left'},
-      body:body,styles:{fontSize:9,cellPadding:2,valign:'top'},
-      columnStyles:{0:{cellWidth:55,fontStyle:'bold'},1:{cellWidth:24,halign:'center'},2:{cellWidth:'auto'}},
-      didParseCell:function(d){
-        if(d.section==='body'&&d.column.index===1){const v=d.cell.raw;
-          if(v==='Cumple'){d.cell.styles.textColor=[46,125,50];d.cell.styles.fontStyle='bold';}
-          else if(v==='No cumple'){d.cell.styles.textColor=[198,40,40];d.cell.styles.fontStyle='bold';}
-          else if(v==='N.A.'){d.cell.styles.textColor=[120,120,120];}}
-      },
-      didDrawPage:function(){addFooter(doc);}});
-    y=doc.lastAutoTable.finalY+2;
-  });
-  const hasImgs=Object.values(EVID).some(a=>a.length);
-  if(hasImgs){
-    doc.addPage();addFooter(doc);
-    doc.setFillColor(...coffee);doc.rect(0,0,PW,18,'F');
-    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(14);
-    doc.text('EVIDENCIA FOTOGRÁFICA',105,12,{align:'center'});
-    let ey=28;
-    LEGOS.forEach((L,li)=>{
-      const imgs=EVID[li]||[];if(!imgs.length)return;
-      if(ey>250){doc.addPage();addFooter(doc);ey=20;}
-      doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...coffee2);
-      doc.text(L.lego,14,ey);ey+=4;
-      let x=14;const w=58,h=44,gap=4;
-      imgs.forEach((d,idx)=>{
-        if(x+w>196){x=14;ey+=h+8;}
-        if(ey+h>284){doc.addPage();addFooter(doc);ey=20;x=14;
-          doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...coffee2);
-          doc.text(L.lego+' (cont.)',14,ey);ey+=4;}
-        try{doc.addImage(d,'JPEG',x,ey+2,w,h);}catch(e){}
-        doc.setDrawColor(...gold);doc.rect(x,ey+2,w,h);
-        doc.setFontSize(7);doc.setTextColor(120,110,100);doc.text(L.lego+' · '+(idx+1),x+1,ey+h+5);
-        x+=w+gap;
-      });
-      ey+=h+13;x=14;
-    });
-  }
-  doc.save(fnameBase()+".pdf");
+ const {jsPDF}=window.jspdf;const doc=new jsPDF('p','mm','a4');const PW=210;
+ const coffee=[74,46,30],coffee2=[111,78,55],gold=[200,163,91];const m=meta();
+ // ===== Encabezado con logo =====
+ doc.setFillColor(...coffee);doc.rect(0,0,PW,40,'F');
+ if(LOGO_DATAURL){try{doc.addImage(LOGO_DATAURL,'PNG',12,7,26,26);}catch(e){}}
+ const tx=LOGO_DATAURL?46:105;const al=LOGO_DATAURL?'left':'center';
+ doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(19);
+ doc.text('INFORME DE VISITA DE OPERACIONES',tx,17,{align:al});
+ doc.setFont('helvetica','italic');doc.setFontSize(10);doc.setTextColor(...gold);
+ doc.text('Don Salazar Coffee — Café con Sabor a Perú',tx,25,{align:al});
+ doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(255,255,255);
+ doc.text(`${m.sede}  ·  ${m.visita}  ·  ${m.mes} 2026`,tx,32,{align:al});
+ // ===== NOTA GENERAL arriba =====
+ let G=0,T=0;const legoRows=[];
+ LEGOS.forEach((L,li)=>{const r=legoScore(li);G+=r.got;T+=r.tot;legoRows.push([L.lego,`${r.answered}/${r.total}`,(r.tot?Math.round(100*r.got/r.tot):0)+'%']);});
+ const pct=T?Math.round(100*G/T):0;
+ let y=48;
+ doc.setFillColor(...gold);doc.roundedRect(14,y,55,30,3,3,'F');
+ doc.setTextColor(59,36,21);doc.setFont('helvetica','bold');doc.setFontSize(30);doc.text(pct+'%',41.5,y+15,{align:'center'});
+ doc.setFontSize(9);doc.text('NOTA GENERAL',41.5,y+24,{align:'center'});
+ doc.autoTable({startY:y,margin:{left:75},tableWidth:121,head:[['Lego','Cumpl.','Nota']],body:legoRows,theme:'grid',
+   headStyles:{fillColor:coffee2,textColor:255,fontSize:10},bodyStyles:{fontSize:10},columnStyles:{1:{halign:'center'},2:{halign:'center',fontStyle:'bold'}}});
+ y=Math.max(doc.lastAutoTable.finalY,y+30)+8;
+ // ===== Datos =====
+ doc.setTextColor(40,30,20);
+ doc.autoTable({startY:y,theme:'plain',body:[['Sede',m.sede],['Encargado de sede',m.enc],['Mes',m.mes],['Fecha de visita',m.fecha],['Visita',m.visita]],
+   styles:{fontSize:10,cellPadding:1.3},columnStyles:{0:{fontStyle:'bold',textColor:coffee2,cellWidth:55}}});
+ y=doc.lastAutoTable.finalY+6;
+ // ===== Detalle =====
+ doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...coffee);doc.text('Detalle de cumplimiento',14,y);y+=3;
+ LEGOS.forEach((L,li)=>{const body=L.subs.map((S,si)=>{const s=state[li+'-'+si];return[S.sub,s.check||'—',s.obs||''];});
+   doc.autoTable({startY:y+4,head:[[{content:L.lego,colSpan:3}]],theme:'grid',
+     headStyles:{fillColor:coffee2,textColor:255,fontSize:11,halign:'left'},body:body,styles:{fontSize:9,cellPadding:2,valign:'top'},
+     columnStyles:{0:{cellWidth:55,fontStyle:'bold'},1:{cellWidth:24,halign:'center'},2:{cellWidth:'auto'}},
+     didParseCell:function(d){if(d.section==='body'&&d.column.index===1){const v=d.cell.raw;
+       if(v==='Cumple'){d.cell.styles.textColor=[46,125,50];d.cell.styles.fontStyle='bold';}
+       else if(v==='No cumple'){d.cell.styles.textColor=[198,40,40];d.cell.styles.fontStyle='bold';}
+       else if(v==='N.A.'){d.cell.styles.textColor=[120,120,120];}}},
+     didDrawPage:function(){addFooter(doc);}});
+   y=doc.lastAutoTable.finalY+2;});
+ // ===== Evidencias (todas, ordenadas) =====
+ if(evidImgs.length){
+   doc.addPage();addFooter(doc);doc.setFillColor(...coffee);doc.rect(0,0,PW,18,'F');
+   doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(14);doc.text('EVIDENCIA FOTOGRÁFICA',105,12,{align:'center'});
+   let ey=26,x=14;const w=58,h=44,gap=4;
+   evidImgs.forEach((d,idx)=>{if(x+w>196){x=14;ey+=h+10;}
+     if(ey+h>286){doc.addPage();addFooter(doc);ey=20;x=14;}
+     try{doc.addImage(d,'JPEG',x,ey,w,h);}catch(e){}
+     doc.setDrawColor(...gold);doc.rect(x,ey,w,h);
+     doc.setFontSize(8);doc.setTextColor(90,70,55);doc.setFont('helvetica','bold');doc.text('#'+(idx+1),x+1,ey+h+5);x+=w+gap;});
+ }
+ // ===== Firma al final =====
+ drawFirma(doc);
+ doc.save(fnameBase()+".pdf");
 }
-function addFooter(doc){
-  doc.setFontSize(8);doc.setTextColor(150,140,130);doc.setFont('helvetica','normal');
-  doc.text('Don Salazar Coffee · Operaciones · Café con Sabor a Perú',105,291,{align:'center'});
+function drawFirma(doc){
+ const coffee2=[111,78,55];let y=doc.lastAutoTable?doc.lastAutoTable.finalY:40;
+ // asegurar espacio o nueva pagina
+ if(y>250)y=20,doc.addPage(),addFooter(doc);else y=Math.max(y+14,260);
+ if(y>262){doc.addPage();addFooter(doc);y=30;}
+ doc.setDrawColor(200,163,91);doc.line(14,y,90,y);
+ if(FIRMA_DATAURL){try{doc.addImage(FIRMA_DATAURL,'PNG',14,y+3,80,28);return;}catch(e){}}
+ doc.setTextColor(...coffee2);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Guadalupe Llacua Segil',14,y+8);
+ doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(70,55,45);
+ doc.text('Coordinadora de Operaciones',14,y+13);
+ doc.text('+51 986 688 102',14,y+18);
+ doc.setFont('helvetica','italic');doc.text('Café con Sabor a Perú',14,y+23);
+ doc.setFont('helvetica','normal');doc.setTextColor(60,90,160);doc.textWithLink('https://linktr.ee/donsalazar',14,y+28,{url:'https://linktr.ee/donsalazar'});
 }
+function addFooter(doc){doc.setFontSize(8);doc.setTextColor(150,140,130);doc.setFont('helvetica','normal');
+ doc.text('Don Salazar Coffee · Operaciones · Café con Sabor a Perú',105,291,{align:'center'});}
 init();
-</script>
-</body>
-</html>
+</script></body></html>
