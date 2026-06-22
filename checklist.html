@@ -44,10 +44,9 @@
 <script>
 (function(){var HASH="cf0f9bc246d260ad34b335114228ef43c51867c5b3c604f218853e6c07c8dd9c";
 function done(){var g=document.getElementById("dsgate");if(g)g.remove();document.documentElement.style.overflow="";}
-try{if(localStorage.getItem("ds_auth")===HASH){done();return;}}catch(e){}
 document.documentElement.style.overflow="hidden";
 function sha(t){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)).then(function(b){return [].map.call(new Uint8Array(b),function(x){return x.toString(16).padStart(2,"0");}).join("");});}
-function check(){var v=document.getElementById("dsclave").value;sha(v).then(function(h){if(h===HASH){try{localStorage.setItem("ds_auth",HASH);}catch(e){}done();}else{document.getElementById("dserr").textContent="Clave incorrecta";}});}
+function check(){var v=document.getElementById("dsclave").value;sha(v).then(function(h){if(h===HASH){done();}else{document.getElementById("dserr").textContent="Clave incorrecta";}});}
 function wire(){var b=document.getElementById("dsbtn"),i=document.getElementById("dsclave");if(b)b.onclick=check;if(i){i.addEventListener("keydown",function(e){if(e.key==="Enter")check();});i.focus();}}
 if(document.readyState!=="loading")wire();else document.addEventListener("DOMContentLoaded",wire);
 })();
