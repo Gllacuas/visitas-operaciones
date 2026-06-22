@@ -43,6 +43,7 @@
  <div class="toolbar">
    <button class="btn btn-save" onclick="saveEntry()">✔ Guardar checklist</button>
    <button class="btn btn-folder" id="folderBtn" onclick="connectFolder()">📁 Conectar carpeta</button>
+   <button class="btn btn-ghost" onclick="allSI()">✓ Todo SI</button>
  </div>
  <div class="hint">Marca <b>SI / NO / N.A.</b> en cada punto. El % se calcula solo. En la compu (Chrome/Edge) con la carpeta conectada se va acumulando en <b>Checklist Diario - DATA.json</b>; en celular se descarga el registro.</div>
  <div class="card"><div id="puntos"></div></div>
@@ -63,7 +64,10 @@ async function connectFolder(){try{dirHandle=await window.showDirectoryPicker({m
 async function tryReconnect(){try{const h=await idbGet('dir');if(!h)return;const p=await h.queryPermission({mode:'readwrite'});if(p==='granted'){dirHandle=h;setFB(true);}else{const b=document.getElementById('folderBtn');b.textContent='📁 Reconectar carpeta';b.onclick=async()=>{const q=await h.requestPermission({mode:'readwrite'});if(q==='granted'){dirHandle=h;setFB(true);b.onclick=connectFolder;}};}}catch(e){}}
 function init(){
  const s=document.getElementById('mSede');SEDES.forEach(x=>s.add(new Option(x,x)));
+ try{const last=localStorage.getItem('ck_sede');if(last&&SEDES.includes(last))s.value=last;}catch(e){}
+ s.addEventListener('change',()=>{try{localStorage.setItem('ck_sede',s.value);}catch(e){}});
  document.getElementById('mFecha').value=new Date().toISOString().slice(0,10);
+ const hr=new Date().getHours();document.getElementById('mMomento').value=(hr<11?'Apertura':(hr<17?'Cambio de turno':'Cierre'));
  const cont=document.getElementById('puntos');
  PUNTOS.forEach((p,i)=>{state[i]=null;const d=document.createElement('div');d.className='pt';
    d.innerHTML=`<div class="pt-name">${p}</div><div class="checks">
@@ -73,6 +77,7 @@ function init(){
    cont.appendChild(d);});
  recalc();tryReconnect();
 }
+function allSI(){PUNTOS.forEach((p,i)=>{state[i]='SI';['s','n','a'].forEach(x=>document.getElementById(x+'-'+i).className='chk');document.getElementById('s-'+i).classList.add('sel-s');});recalc();toast('Todos marcados SI · cambia solo las excepciones');}
 function setC(i,v){state[i]=(state[i]===v?null:v);
  ['s','n','a'].forEach(p=>document.getElementById(p+'-'+i).className='chk');
  if(state[i]==='SI')document.getElementById('s-'+i).classList.add('sel-s');
