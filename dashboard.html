@@ -94,8 +94,8 @@ function render(){
  document.getElementById('kpis').innerHTML=
   kpi('Nota visitas',f1(nv),'Operaciones',sem(nv)[1])+
   kpi('Checklist diario',f1(nc),'Apertura · Cambio · Cierre',sem(nc)[1])+
-  kpi('Inventario',(ni==null?'—':Math.round(ni)+'%'),_io+'/'+_it+' sedes en rango ≤2.5%',sem(ni)[1])+
-  kpi('Merma',(nm==null?'—':Math.round(nm)+'%'),_mo+'/'+_mt+' sedes en rango ≤2.5%',sem(nm)[1])+
+  kpi('Inventario',(_it?_io+'/'+_it:'—'),'sedes en rango ≤2.5%',sem(ni)[1])+
+  kpi('Merma',(_mt?_mo+'/'+_mt:'—'),'sedes en rango ≤2.5%',sem(nm)[1])+
   kpi('Sedes en alerta',alert,(S?S:'de '+DATA.sedes.length+' sedes'),alert>0?'var(--gR)':'var(--gOK)');
  renderEvo();renderMom();renderVSM();renderHeat();renderLegos();renderRank();
 }
