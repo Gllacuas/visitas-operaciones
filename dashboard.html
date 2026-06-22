@@ -83,8 +83,9 @@ function render(){
  // KPIs
  const nv=avg(DATA.visitaSM.filter(x=>mS(x)&&mM(x)).map(x=>x[2]));
  const nc=wavg(DATA.checklist.filter(x=>mS(x)&&mM(x)));
- const invR=DATA.inv.filter(x=>mS(x)&&mM(x)&&typeof x[2]==='number');const ni=invR.length?100*invR.filter(x=>x[2]<=2.5).length/invR.length:null;
- const merR=DATA.merma.filter(x=>mS(x)&&mM(x)&&typeof x[2]==='number');const nm=merR.length?100*merR.filter(x=>x[2]<=2.5).length/merR.length:null;
+ const _sd=S?[S]:DATA.sedes;let _io=0,_it=0,_mo=0,_mt=0;
+ _sd.forEach(s=>{const iv=sedeInvVal(s,M);if(iv!=null){_it++;if(iv<=2.5)_io++;}const mr=sedeMerVal(s,M);if(mr!=null){_mt++;if(mr<=2.5)_mo++;}});
+ const ni=_it?100*_io/_it:null;const nm=_mt?100*_mo/_mt:null;
  let alert=0;const sedesIter=S?[S]:DATA.sedes;
  sedesIter.forEach(s=>{const vi=sedeVisita(s,M),ck=sedeChk(s,M),iv=sedeInvVal(s,M),mr=sedeMerVal(s,M);
    if(vi!=null&&ck!=null){if(estado(vi,ck,iv,mr)[0]==='Alerta')alert++;}});
@@ -93,8 +94,8 @@ function render(){
  document.getElementById('kpis').innerHTML=
   kpi('Nota visitas',f1(nv),'Operaciones',sem(nv)[1])+
   kpi('Checklist diario',f1(nc),'Apertura · Cambio · Cierre',sem(nc)[1])+
-  kpi('Inventario',(ni==null?'—':Math.round(ni)+'%'),'sedes en rango ≤2.5%',sem(ni)[1])+
-  kpi('Merma',(nm==null?'—':Math.round(nm)+'%'),'sedes en rango ≤2.5%',sem(nm)[1])+
+  kpi('Inventario',(ni==null?'—':Math.round(ni)+'%'),_io+'/'+_it+' sedes en rango ≤2.5%',sem(ni)[1])+
+  kpi('Merma',(nm==null?'—':Math.round(nm)+'%'),_mo+'/'+_mt+' sedes en rango ≤2.5%',sem(nm)[1])+
   kpi('Sedes en alerta',alert,(S?S:'de '+DATA.sedes.length+' sedes'),alert>0?'var(--gR)':'var(--gOK)');
  renderEvo();renderMom();renderVSM();renderHeat();renderLegos();renderRank();
 }
