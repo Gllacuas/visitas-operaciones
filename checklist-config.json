@@ -1,0 +1,38 @@
+{
+  "Apertura": [
+    "Vitrina de exhibición",
+    "Exhibición de merch y café",
+    "Barra de métodos y caja",
+    "Checklist de apertura",
+    "Checklist de uniformes",
+    "Checklist de baño",
+    "Calibración en forms",
+    "TVS / Material POP",
+    "Aplicativos abiertos",
+    "Push de incentivos 8-10 AM",
+    "Apertura a tiempo"
+  ],
+  "Cambio de turno": [
+    "Vitrina de exhibición",
+    "Exhibición de merch y café",
+    "Barra de métodos y caja",
+    "Calibración en forms",
+    "Checklist de baño",
+    "Checklist de uniformes",
+    "TVS / Material POP",
+    "Aplicativos abiertos",
+    "Push de incentivos 3PM",
+    "Cierre de turno am",
+    "Merma leche y café"
+  ],
+  "Cierre": [
+    "Checklist de cierre",
+    "Cronograma de limpieza",
+    "Checklist de baño",
+    "Reporte del día",
+    "TVS / Material POP",
+    "Aplicativos cerrados",
+    "Cierre del día",
+    "Merma de leche y café"
+  ]
+}

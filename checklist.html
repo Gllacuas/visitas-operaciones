@@ -13,7 +13,7 @@
  .score-pill .big{font-size:26px;font-weight:700;line-height:1}.score-pill .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gold)}
  .wrap{max-width:780px;margin:20px auto;padding:0 16px}
  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
- .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+ .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
  .meta-grid label{display:block;font-size:12px;font-weight:600;color:var(--coffee2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
  .meta-grid input,.meta-grid select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fffdfa}
  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 16px}
@@ -24,6 +24,7 @@
  .checks{display:flex;gap:6px;flex-shrink:0}
  .chk{padding:8px 14px;border-radius:8px;border:1.5px solid var(--line);background:#faf6ef;cursor:pointer;font-size:13px;font-weight:700;color:#7a6a5a}
  .chk.sel-s{background:var(--green);color:#fff;border-color:var(--green)}.chk.sel-n{background:var(--red);color:#fff;border-color:var(--red)}.chk.sel-a{background:var(--gray);color:#fff;border-color:var(--gray)}
+ .momento-tag{font-size:13px;color:var(--coffee2);font-weight:600;margin-bottom:2px}
  .hint{font-size:12px;color:var(--gray);margin:4px 0 14px}
  .evi{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}
  .thumb{position:relative;width:84px;height:84px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
@@ -32,89 +33,82 @@
  footer{text-align:center;color:var(--gray);font-size:12px;padding:24px}
  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#4a2e1e;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.3);opacity:0;transition:.25s;z-index:100;max-width:90%;text-align:center}.toast.show{opacity:1}
 </style></head><body>
-<header class="app"><div><h1>Checklist Diario de Apertura</h1><p>Don Salazar Coffee — Café con Sabor a Perú</p></div>
+<header class="app"><div><h1>Checklist Diario</h1><p>Don Salazar Coffee — Café con Sabor a Perú</p></div>
  <div class="score-pill"><div class="big" id="pct">—</div><div class="lbl">Cumplimiento</div></div></header>
 <div class="wrap">
  <div class="card"><div class="meta-grid">
    <div><label>Sede</label><select id="mSede"></select></div>
    <div><label>Fecha</label><input type="date" id="mFecha"></div>
-   <div><label>Momento</label><select id="mMomento"><option>Apertura</option><option>Cambio de turno</option><option>Cierre</option></select></div>
+   <div><label>Momento</label><select id="mMomento"></select></div>
+   <div><label>Hora (opcional)</label><input type="text" id="mHora" placeholder="Ej: 7:00 am"></div>
  </div></div>
  <div class="toolbar">
    <button class="btn btn-save" onclick="saveEntry()">✔ Guardar checklist</button>
-   <button class="btn btn-folder" id="folderBtn" onclick="connectFolder()">📁 Conectar carpeta</button>
    <button class="btn btn-ghost" onclick="allSI()">✓ Todo SI</button>
+   <button class="btn btn-folder" id="folderBtn" onclick="connectFolder()">📁 Conectar carpeta</button>
  </div>
- <div class="hint">Marca <b>SI / NO / N.A.</b> en cada punto. El % se calcula solo. En la compu (Chrome/Edge) con la carpeta conectada se va acumulando en <b>Checklist Diario - DATA.json</b>; en celular se descarga el registro.</div>
- <div class="card"><div id="puntos"></div></div>
+ <div class="hint">Elige el <b>momento</b> y se muestran sus puntos. Marca <b>SI / NO / N.A.</b> (o usa "Todo SI" y cambia las excepciones). El % se calcula solo. En compu con carpeta conectada se acumula en <b>Checklist Diario - DATA.json</b>.</div>
+ <div class="card"><div class="momento-tag" id="momentoTag"></div><div id="puntos"></div></div>
  <div class="card"><label style="font-size:12px;font-weight:600;color:var(--coffee2);text-transform:uppercase;letter-spacing:.5px">Evidencia (opcional)</label>
    <div class="evi" id="evi"><label class="addimg">＋ Fotos<input type="file" accept="image/*" multiple style="display:none" onchange="addImg(event)"></label></div></div>
 </div>
 <footer>Don Salazar Coffee · Operaciones · Café con Sabor a Perú</footer>
 <div class="toast" id="toast"></div>
 <script>
-const SEDES=["Camelias", "Fontana", "Higuereta", "Jockey", "Pardo", "Puntamar", "Salaverry", "San Miguel", "UP"];const PUNTOS=["Vitrina de exhibición", "Exhibición de merch y café", "Barra de métodos y caja", "Checklist de apertura", "Checklist de uniformes", "Checklist de baño", "Calibración en forms", "TVS / Material POP", "Aplicativos abiertos", "Push de incentivos 8-10 AM", "Apertura a tiempo"];const DATA_FILE='Checklist Diario - DATA.json';
-const state={};let imgs=[];let dirHandle=null;let _tt;
+const SEDES=["Camelias", "Fontana", "Higuereta", "Jockey", "Pardo", "Puntamar", "Salaverry", "San Miguel", "UP"];
+let CONFIG={"Apertura": ["Vitrina de exhibición", "Exhibición de merch y café", "Barra de métodos y caja", "Checklist de apertura", "Checklist de uniformes", "Checklist de baño", "Calibración en forms", "TVS / Material POP", "Aplicativos abiertos", "Push de incentivos 8-10 AM", "Apertura a tiempo"], "Cambio de turno": ["Vitrina de exhibición", "Exhibición de merch y café", "Barra de métodos y caja", "Calibración en forms", "Checklist de baño", "Checklist de uniformes", "TVS / Material POP", "Aplicativos abiertos", "Push de incentivos 3PM", "Cierre de turno am", "Merma leche y café"], "Cierre": ["Checklist de cierre", "Cronograma de limpieza", "Checklist de baño", "Reporte del día", "TVS / Material POP", "Aplicativos cerrados", "Cierre del día", "Merma de leche y café"]};            // fallback embebido; se intenta reemplazar por checklist-config.json
+const DATA_FILE='Checklist Diario - DATA.json';
+let state={};let imgs=[];let dirHandle=null;let _tt;let PTS=[];
 function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>e.classList.remove('show'),4000);}
 function idb(mode,fn){return new Promise((res,rej)=>{const o=indexedDB.open('ds_ck',1);o.onupgradeneeded=()=>o.result.createObjectStore('kv');o.onsuccess=()=>{const tx=o.result.transaction('kv',mode);fn(tx.objectStore('kv'),res,rej);};o.onerror=()=>rej(o.error);});}
 function idbGet(k){return idb('readonly',(st,res)=>{const g=st.get(k);g.onsuccess=()=>res(g.result);g.onerror=()=>res(null);});}
 function idbSet(k,v){return idb('readwrite',(st,res)=>{st.put(v,k);res(true);});}
 function setFB(on){const b=document.getElementById('folderBtn');b.classList.toggle('on',on);b.textContent=on?'📁 Carpeta conectada ✓':'📁 Conectar carpeta';}
-async function connectFolder(){try{dirHandle=await window.showDirectoryPicker({mode:'readwrite'});await idbSet('dir',dirHandle);setFB(true);toast('Carpeta conectada. Se acumulará en Checklist Diario - DATA.json');}catch(e){if(e.name!=='AbortError')toast('Usa Chrome o Edge en computadora para conectar carpeta.');}}
+async function connectFolder(){try{dirHandle=await window.showDirectoryPicker({mode:'readwrite'});await idbSet('dir',dirHandle);setFB(true);toast('Carpeta conectada.');}catch(e){if(e.name!=='AbortError')toast('Usa Chrome o Edge en computadora para conectar carpeta.');}}
 async function tryReconnect(){try{const h=await idbGet('dir');if(!h)return;const p=await h.queryPermission({mode:'readwrite'});if(p==='granted'){dirHandle=h;setFB(true);}else{const b=document.getElementById('folderBtn');b.textContent='📁 Reconectar carpeta';b.onclick=async()=>{const q=await h.requestPermission({mode:'readwrite'});if(q==='granted'){dirHandle=h;setFB(true);b.onclick=connectFolder;}};}}catch(e){}}
-function init(){
+async function loadConfig(){try{const r=await fetch('checklist-config.json?_='+Date.now());if(r.ok){const c=await r.json();if(c&&Object.keys(c).length)CONFIG=c;}}catch(e){}}
+function buildMomentos(){const m=document.getElementById('mMomento');m.innerHTML='';Object.keys(CONFIG).forEach(k=>m.add(new Option(k,k)));
+ const hr=new Date().getHours();const want=hr<11?'Apertura':(hr<17?'Cambio de turno':'Cierre');if(CONFIG[want])m.value=want;
+ m.onchange=renderPoints;}
+function renderPoints(){PTS=CONFIG[document.getElementById('mMomento').value]||[];state={};
+ document.getElementById('momentoTag').textContent=PTS.length+' puntos · '+document.getElementById('mMomento').value;
+ const c=document.getElementById('puntos');c.innerHTML='';
+ PTS.forEach((p,i)=>{const d=document.createElement('div');d.className='pt';
+   d.innerHTML='<div class="pt-name">'+p+'</div><div class="checks">'+
+     '<div class="chk" id="s-'+i+'" onclick="setC('+i+',\'SI\')">SI</div>'+
+     '<div class="chk" id="n-'+i+'" onclick="setC('+i+',\'NO\')">NO</div>'+
+     '<div class="chk" id="a-'+i+'" onclick="setC('+i+',\'N.A.\')">N.A.</div></div>';
+   c.appendChild(d);});
+ recalc();}
+function setC(i,v){state[i]=(state[i]===v?null:v);['s','n','a'].forEach(p=>document.getElementById(p+'-'+i).className='chk');
+ if(state[i]==='SI')document.getElementById('s-'+i).classList.add('sel-s');
+ if(state[i]==='NO')document.getElementById('n-'+i).classList.add('sel-n');
+ if(state[i]==='N.A.')document.getElementById('a-'+i).classList.add('sel-a');recalc();}
+function allSI(){PTS.forEach((p,i)=>{state[i]='SI';['s','n','a'].forEach(x=>document.getElementById(x+'-'+i).className='chk');document.getElementById('s-'+i).classList.add('sel-s');});recalc();toast('Todos en SI · cambia solo las excepciones');}
+function calcPct(){let si=0,no=0;PTS.forEach((p,i)=>{if(state[i]==='SI')si++;else if(state[i]==='NO')no++;});return (si+no>0)?Math.round(100*si/(si+no)):null;}
+function recalc(){const p=calcPct();document.getElementById('pct').textContent=(p===null?'—':p+'%');}
+function addImg(ev){[...ev.target.files].forEach(f=>{const r=new FileReader();r.onload=e=>{const im=new Image();im.onload=()=>{const mx=900;let w=im.width,h=im.height;if(w>mx){h=h*mx/w;w=mx;}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);imgs.push(c.toDataURL('image/jpeg',0.7));renderImg();};im.src=e.target.result;};r.readAsDataURL(f);});ev.target.value='';}
+function renderImg(){const row=document.getElementById('evi');row.querySelectorAll('.thumb').forEach(t=>t.remove());imgs.forEach((d,i)=>{const t=document.createElement('div');t.className='thumb';t.innerHTML='<img src="'+d+'"><button class="x" onclick="rmImg('+i+')">✕</button>';row.insertBefore(t,row.lastChild);});}
+function rmImg(i){imgs.splice(i,1);renderImg();}
+function buildEntry(){const sede=mSede.value,fecha=mFecha.value,momento=mMomento.value;
+ if(!sede||!fecha){toast('Completa sede y fecha');return null;}
+ if(!PTS.some((p,i)=>state[i])){toast('Marca al menos un punto');return null;}
+ const pts={};PTS.forEach((p,i)=>{pts[p]=state[i]||'';});
+ return {sede,fecha,momento,hora:mHora.value||'',pct:calcPct(),puntos:pts,fotos:imgs.length,ts:new Date().toISOString()};}
+function dl(entry){const blob=new Blob([JSON.stringify(entry)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Checklist '+entry.sede+' '+entry.fecha+' '+entry.momento+'.json';a.click();}
+async function saveEntry(){const entry=buildEntry();if(!entry)return;
+ if(dirHandle){try{let arr=[];try{const fh=await dirHandle.getFileHandle(DATA_FILE);const f=await fh.getFile();arr=JSON.parse(await f.text());if(!Array.isArray(arr))arr=[];}catch(e){arr=[];}
+   const key=x=>x.sede+'|'+x.fecha+'|'+x.momento;const idx=arr.findIndex(x=>key(x)===key(entry));if(idx>=0)arr[idx]=entry;else arr.push(entry);
+   const fh=await dirHandle.getFileHandle(DATA_FILE,{create:true});const w=await fh.createWritable();await w.write(JSON.stringify(arr,null,1));await w.close();
+   toast('✔ Guardado ('+arr.length+') · '+entry.sede+' '+entry.momento+' '+(entry.pct===null?'':entry.pct+'%'));newEntry();
+ }catch(e){toast('Error; descargando…');dl(entry);}}else{dl(entry);toast('Sin carpeta: registro descargado.');}}
+function newEntry(){renderPoints();imgs=[];renderImg();document.getElementById('mHora').value='';}
+async function init(){
  const s=document.getElementById('mSede');SEDES.forEach(x=>s.add(new Option(x,x)));
  try{const last=localStorage.getItem('ck_sede');if(last&&SEDES.includes(last))s.value=last;}catch(e){}
  s.addEventListener('change',()=>{try{localStorage.setItem('ck_sede',s.value);}catch(e){}});
  document.getElementById('mFecha').value=new Date().toISOString().slice(0,10);
- const hr=new Date().getHours();document.getElementById('mMomento').value=(hr<11?'Apertura':(hr<17?'Cambio de turno':'Cierre'));
- const cont=document.getElementById('puntos');
- PUNTOS.forEach((p,i)=>{state[i]=null;const d=document.createElement('div');d.className='pt';
-   d.innerHTML=`<div class="pt-name">${p}</div><div class="checks">
-     <div class="chk" id="s-${i}" onclick="setC(${i},'SI')">SI</div>
-     <div class="chk" id="n-${i}" onclick="setC(${i},'NO')">NO</div>
-     <div class="chk" id="a-${i}" onclick="setC(${i},'N.A.')">N.A.</div></div>`;
-   cont.appendChild(d);});
- recalc();tryReconnect();
+ await loadConfig();buildMomentos();renderPoints();tryReconnect();
 }
-function allSI(){PUNTOS.forEach((p,i)=>{state[i]='SI';['s','n','a'].forEach(x=>document.getElementById(x+'-'+i).className='chk');document.getElementById('s-'+i).classList.add('sel-s');});recalc();toast('Todos marcados SI · cambia solo las excepciones');}
-function setC(i,v){state[i]=(state[i]===v?null:v);
- ['s','n','a'].forEach(p=>document.getElementById(p+'-'+i).className='chk');
- if(state[i]==='SI')document.getElementById('s-'+i).classList.add('sel-s');
- if(state[i]==='NO')document.getElementById('n-'+i).classList.add('sel-n');
- if(state[i]==='N.A.')document.getElementById('a-'+i).classList.add('sel-a');
- recalc();}
-function calcPct(){let si=0,no=0;PUNTOS.forEach((p,i)=>{if(state[i]==='SI')si++;else if(state[i]==='NO')no++;});
- return (si+no>0)?Math.round(100*si/(si+no)):null;}
-function recalc(){const p=calcPct();document.getElementById('pct').textContent=(p===null?'—':p+'%');}
-function addImg(ev){[...ev.target.files].forEach(f=>{const r=new FileReader();r.onload=e=>{const im=new Image();im.onload=()=>{const mx=900;let w=im.width,h=im.height;if(w>mx){h=h*mx/w;w=mx;}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);imgs.push(c.toDataURL('image/jpeg',0.7));renderImg();};im.src=e.target.result;};r.readAsDataURL(f);});ev.target.value='';}
-function renderImg(){const row=document.getElementById('evi');row.querySelectorAll('.thumb').forEach(t=>t.remove());
- imgs.forEach((d,i)=>{const t=document.createElement('div');t.className='thumb';t.innerHTML=`<img src="${d}"><button class="x" onclick="rmImg(${i})">✕</button>`;row.insertBefore(t,row.lastChild);});}
-function rmImg(i){imgs.splice(i,1);renderImg();}
-function buildEntry(){
- const sede=mSede.value,fecha=mFecha.value,momento=mMomento.value;
- if(!sede||!fecha){toast('Completa sede y fecha');return null;}
- const answered=PUNTOS.some((p,i)=>state[i]);
- if(!answered){toast('Marca al menos un punto');return null;}
- const pts={};PUNTOS.forEach((p,i)=>{pts[p]=state[i]||'';});
- return {sede,fecha,momento,pct:calcPct(),puntos:pts,fotos:imgs.length,ts:new Date().toISOString()};
-}
-function dl(entry){const blob=new Blob([JSON.stringify(entry)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Checklist '+entry.sede+' '+entry.fecha+' '+entry.momento+'.json';a.click();}
-async function saveEntry(){
- const entry=buildEntry();if(!entry)return;
- if(dirHandle){
-   try{
-     let arr=[];
-     try{const fh=await dirHandle.getFileHandle(DATA_FILE);const f=await fh.getFile();arr=JSON.parse(await f.text());if(!Array.isArray(arr))arr=[];}catch(e){arr=[];}
-     const key=x=>x.sede+'|'+x.fecha+'|'+x.momento;
-     const idx=arr.findIndex(x=>key(x)===key(entry));
-     if(idx>=0)arr[idx]=entry;else arr.push(entry);
-     const fh=await dirHandle.getFileHandle(DATA_FILE,{create:true});const w=await fh.createWritable();await w.write(JSON.stringify(arr,null,1));await w.close();
-     toast('✔ Guardado ('+arr.length+' registros) · '+entry.sede+' '+entry.fecha+' '+entry.pct+'%');
-     newEntry();
-   }catch(e){toast('Error al guardar; descargando…');dl(entry);}
- }else{dl(entry);toast('Sin carpeta: registro descargado. Conéctala en la compu para acumular.');}
-}
-function newEntry(){PUNTOS.forEach((p,i)=>{state[i]=null;['s','n','a'].forEach(x=>document.getElementById(x+'-'+i).className='chk');});imgs=[];renderImg();recalc();}
 init();
 </script></body></html>
