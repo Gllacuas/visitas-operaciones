@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventario y Merma — Don Salazar Coffee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=Noto+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+ :root{--coffee:#4a2e1e;--coffee2:#6f4e37;--gold:#c8a35b;--cream:#f6f1e9;--green:#2e7d32;--amber:#e8a13a;--red:#c62828;--gray:#8a7d70;--line:#e3d8c8}
+ *{box-sizing:border-box}body{margin:0;font-family:'Golos Text','Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--cream);color:#2b2018}
+ header.app{background:linear-gradient(135deg,var(--coffee),var(--coffee2));color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+ header.app .brand h1{margin:0;font-size:19px;font-family:'Noto Serif',Georgia,serif;font-weight:600}header.app .brand p{margin:2px 0 0;font-size:12px;color:var(--gold);font-style:italic;font-family:'Noto Serif',Georgia,serif}
+ .score-pill{text-align:center;background:rgba(255,255,255,.12);border:1px solid var(--gold);border-radius:14px;padding:6px 16px;min-width:96px}
+ .score-pill .big{font-size:24px;font-weight:700;line-height:1}.score-pill .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gold)}
+ .wrap{max-width:1080px;margin:20px auto;padding:0 16px}
+ .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+ .card h2.sec{margin:0 0 12px;font-size:17px;color:var(--coffee);font-family:'Noto Serif',Georgia,serif;font-weight:600}
+ .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;align-items:end}
+ .meta-grid label{display:block;font-size:12px;font-weight:600;color:var(--coffee2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+ .meta-grid select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fffdfa}
+ .hint{font-size:12px;color:var(--gray);margin:4px 0 14px}
+ .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 16px}
+ .btn{border:none;border-radius:9px;padding:11px 16px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+ .btn-save{background:#1d6f42;color:#fff}.btn-xls{background:var(--coffee);color:#fff}.btn-folder{background:#2a6f97;color:#fff}.btn-folder.on{background:#1d6f42}
+ table.inv{width:100%;border-collapse:collapse;font-size:13.5px}
+ table.inv th,table.inv td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:center}
+ table.inv th{background:var(--coffee2);color:#fff;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;position:sticky;top:0}
+ table.inv td.sede{text-align:left;font-weight:600;color:#3b2a1c;white-space:nowrap}
+ table.inv input{width:100%;max-width:120px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;font-size:13.5px;text-align:right;background:#fffdfa}
+ .pct{font-weight:700}
+ .est{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block;min-width:64px}
+ .est.ok{background:#e7f3e8;color:var(--green)}.est.ex{background:#fbe6e6;color:var(--red)}.est.na{background:#eee;color:var(--gray)}
+ .grp{font-size:10px;color:var(--gold);background:rgba(255,255,255,.08)}
+ .tblwrap{overflow-x:auto}
+ .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#4a2e1e;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.3);opacity:0;transition:.25s;z-index:100;max-width:90%;text-align:center}.toast.show{opacity:1}
+ footer{text-align:center;color:var(--gray);font-size:12px;padding:24px}
+ .legend{font-size:12px;color:var(--gray);margin-top:8px}
+ .nav{font-size:12px}.nav a{color:var(--gold);text-decoration:none;margin-left:14px}
+</style></head><body>
+<div id="dsgate" style="position:fixed;inset:0;background:linear-gradient(135deg,#4a2e1e,#6f4e37);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:Golos Text,Segoe UI,Arial,sans-serif;">
+<div style="background:#fff;border-radius:14px;padding:28px 26px;max-width:330px;width:90%;text-align:center;box-shadow:0 10px 34px rgba(0,0,0,.35);">
+<div style="font-family:Noto Serif,Georgia,serif;font-size:19px;color:#4a2e1e;font-weight:600;">Don Salazar Coffee</div>
+<div style="font-size:13px;color:#8a7d70;margin:4px 0 16px;">Acceso restringido &middot; ingresa la clave</div>
+<input id="dsclave" type="password" placeholder="Clave" autocomplete="off" style="width:100%;padding:11px;border:1px solid #e3d8c8;border-radius:8px;font-size:15px;margin-bottom:10px;box-sizing:border-box;">
+<button id="dsbtn" style="width:100%;padding:11px;border:none;border-radius:8px;background:#4a2e1e;color:#fff;font-size:15px;font-weight:600;cursor:pointer;">Entrar</button>
+<div id="dserr" style="color:#c62828;font-size:12px;margin-top:8px;min-height:14px;"></div>
+</div></div>
+<script>
+(function(){var HASH="cf0f9bc246d260ad34b335114228ef43c51867c5b3c604f218853e6c07c8dd9c";
+function done(){var g=document.getElementById("dsgate");if(g)g.remove();document.documentElement.style.overflow="";}
+try{if(localStorage.getItem("ds_auth")===HASH){done();return;}}catch(e){}
+document.documentElement.style.overflow="hidden";
+function sha(t){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)).then(function(b){return [].map.call(new Uint8Array(b),function(x){return x.toString(16).padStart(2,"0");}).join("");});}
+function check(){var v=document.getElementById("dsclave").value;sha(v).then(function(h){if(h===HASH){try{localStorage.setItem("ds_auth",HASH);}catch(e){}done();}else{document.getElementById("dserr").textContent="Clave incorrecta";}});}
+function wire(){var b=document.getElementById("dsbtn"),i=document.getElementById("dsclave");if(b)b.onclick=check;if(i){i.addEventListener("keydown",function(e){if(e.key==="Enter")check();});i.focus();}}
+if(document.readyState!=="loading")wire();else document.addEventListener("DOMContentLoaded",wire);
+})();
+</script>
+<header class="app">
+ <div class="brand"><h1>Inventario y Merma</h1><p>Don Salazar Coffee — Café con Sabor a Perú</p></div>
+ <div class="score-pill"><div class="big" id="okBig">0/9</div><div class="lbl">Sedes en rango</div></div>
+</header>
+<div class="wrap">
+ <div class="card"><div class="meta-grid">
+   <div><label>Mes</label><select id="mMes"></select></div>
+   <div style="grid-column:1/-1" class="nav">Otros módulos:
+     <a href="index.html">Visita de operaciones</a>
+     <a href="checklist.html">Checklist diario</a>
+     <a href="dashboard.html">Dashboard</a>
+   </div>
+ </div>
+ <p class="hint">Llena al cierre de mes. Para cada sede ingresa la <b>venta total</b>, el <b>valorizado de ajuste de inventario</b> y el <b>valorizado de merma</b>. El % y el estado se calculan solos (rango objetivo &le; 2.5%).</p>
+ </div>
+
+ <div class="toolbar">
+   <button class="btn btn-folder" id="btnFolder">📁 Conectar archivo DATA</button>
+   <button class="btn btn-save" id="btnSave">💾 Guardar en DATA</button>
+   <button class="btn btn-xls" id="btnXls">⬇️ Descargar Excel del mes</button>
+ </div>
+
+ <div class="card">
+  <h2 class="sec">Detalle por sede</h2>
+  <div class="tblwrap">
+  <table class="inv">
+   <thead>
+    <tr>
+      <th rowspan="2" style="text-align:left">Sede</th>
+      <th rowspan="2">Venta total</th>
+      <th colspan="3" class="grp">Inventario</th>
+      <th colspan="3" class="grp">Merma</th>
+    </tr>
+    <tr>
+      <th>Valorizado ajuste</th><th>% Inv.</th><th>Estado</th>
+      <th>Valorizado merma</th><th>% Merma</th><th>Estado</th>
+    </tr>
+   </thead>
+   <tbody id="rows"></tbody>
+  </table>
+  </div>
+  <p class="legend">Estado: <span class="est ok">OK</span> &le; 2.5% &nbsp; · &nbsp; <span class="est ex">EXCEDE</span> &gt; 2.5%. El % se calcula como valorizado / venta total &times; 100.</p>
+ </div>
+</div>
+<div class="toast" id="toast"></div>
+<footer>Don Salazar Coffee · Operaciones 2026</footer>
+<script>
+const SEDES=["Camelias","Fontana","Higuereta","Jockey","Pardo","Puntamar","Salaverry","San Miguel","UP"];
+const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const UMBRAL=2.5;
+const DB="dsfs",STORE="h";
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function idbGet(k){const d=await idb();return new Promise((res)=>{const t=d.transaction(STORE,"readonly").objectStore(STORE).get(k);t.onsuccess=()=>res(t.result);t.onerror=()=>res(null);});}
+async function idbSet(k,v){const d=await idb();return new Promise((res)=>{const t=d.transaction(STORE,"readwrite").objectStore(STORE).put(v,k);t.onsuccess=()=>res(1);t.onerror=()=>res(0);});}
+let fileHandle=null;
+
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2800);}
+const mSel=document.getElementById("mMes");
+MESES.forEach(m=>{const o=document.createElement("option");o.textContent=m;mSel.appendChild(o);});
+mSel.value=MESES[new Date().getMonth()];
+if(localStorage.getItem("inv_mes"))mSel.value=localStorage.getItem("inv_mes");
+mSel.onchange=()=>{localStorage.setItem("inv_mes",mSel.value);};
+
+const tb=document.getElementById("rows");
+SEDES.forEach((s,i)=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td class="sede">${s}</td>
+   <td><input type="number" step="0.01" data-k="venta" data-i="${i}" placeholder="0.00"></td>
+   <td><input type="number" step="0.01" data-k="inv" data-i="${i}" placeholder="0.00"></td>
+   <td class="pct" id="pi${i}">—</td><td id="ei${i}"><span class="est na">—</span></td>
+   <td><input type="number" step="0.01" data-k="mer" data-i="${i}" placeholder="0.00"></td>
+   <td class="pct" id="pm${i}">—</td><td id="em${i}"><span class="est na">—</span></td>`;
+  tb.appendChild(tr);
+});
+function val(i,k){const el=document.querySelector(`input[data-i="${i}"][data-k="${k}"]`);const v=parseFloat(el.value);return isNaN(v)?null:v;}
+function estHtml(p){if(p===null)return '<span class="est na">—</span>';return p<=UMBRAL?'<span class="est ok">OK</span>':'<span class="est ex">EXCEDE</span>';}
+function recalc(){
+  let okInv=0,n=0;
+  SEDES.forEach((s,i)=>{
+    const venta=val(i,"venta"),inv=val(i,"inv"),mer=val(i,"mer");
+    let pi=null,pm=null;
+    if(venta&&venta!==0){ if(inv!==null)pi=Math.abs(inv)/venta*100; if(mer!==null)pm=Math.abs(mer)/venta*100; }
+    document.getElementById("pi"+i).textContent=pi===null?"—":pi.toFixed(2)+"%";
+    document.getElementById("pm"+i).textContent=pm===null?"—":pm.toFixed(2)+"%";
+    document.getElementById("ei"+i).innerHTML=estHtml(pi);
+    document.getElementById("em"+i).innerHTML=estHtml(pm);
+    if(pi!==null){n++; if(pi<=UMBRAL)okInv++;}
+  });
+  document.getElementById("okBig").textContent=okInv+"/"+(n||9);
+}
+document.querySelectorAll("input[type=number]").forEach(el=>el.addEventListener("input",recalc));
+
+function collect(){
+  const mes=mSel.value;const inv=[],mer=[];
+  SEDES.forEach((s,i)=>{
+    const venta=val(i,"venta"),vi=val(i,"inv"),vm=val(i,"mer");
+    if(venta===null||venta===0)return;
+    if(vi!==null){const p=+(Math.abs(vi)/venta*100).toFixed(2);inv.push([s,mes,vi,venta,p,p<=UMBRAL?"OK":"EXCEDE"]);}
+    if(vm!==null){const p=+(Math.abs(vm)/venta*100).toFixed(2);mer.push([s,mes,vm,venta,p,p<=UMBRAL?"OK":"EXCEDE"]);}
+  });
+  return {mes,inv,mer};
+}
+const INV_HDR=["Sede","Mes","Valorizado ajuste","Venta total","% Inventario","Estado"];
+const MER_HDR=["Sede","Mes","Valorizado merma","Venta total","% Merma","Estado"];
+
+document.getElementById("btnXls").onclick=()=>{
+  const {mes,inv,mer}=collect();
+  if(!inv.length&&!mer.length){toast("Ingresa al menos una sede con venta total");return;}
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([INV_HDR,...inv]),"Inventario");
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([MER_HDR,...mer]),"Merma");
+  XLSX.writeFile(wb,`InventarioMerma ${mes} 2026.xlsx`);
+  toast("Excel descargado");
+};
+
+async function pickFile(){
+  if(!window.showOpenFilePicker){toast("Tu navegador no permite guardar directo. Usa Descargar Excel.");return null;}
+  const [h]=await window.showOpenFilePicker({types:[{description:"Excel",accept:{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":[".xlsx"]}}]});
+  fileHandle=h;await idbSet("invFile",h);
+  document.getElementById("btnFolder").classList.add("on");
+  document.getElementById("btnFolder").textContent="📁 "+h.name;
+  return h;
+}
+document.getElementById("btnFolder").onclick=async()=>{try{await pickFile();toast("Archivo conectado");}catch(e){}};
+
+async function ensureHandle(){
+  if(fileHandle)return fileHandle;
+  const saved=await idbGet("invFile");
+  if(saved){const p=await saved.queryPermission({mode:"readwrite"});if(p==="granted"||(await saved.requestPermission({mode:"readwrite"}))==="granted"){fileHandle=saved;document.getElementById("btnFolder").classList.add("on");document.getElementById("btnFolder").textContent="📁 "+saved.name;return saved;}}
+  return await pickFile();
+}
+function mergeRows(ws,hdr,rows,mes){
+  const data=XLSX.utils.sheet_to_json(ws,{header:1});
+  const body=(data.length?data.slice(1):[]).filter(r=>r.length&&!(String(r[1]||"").trim()===mes && rows.some(nr=>nr[0]===r[0])));
+  const out=[hdr,...body,...rows];
+  return XLSX.utils.aoa_to_sheet(out);
+}
+document.getElementById("btnSave").onclick=async()=>{
+  const {mes,inv,mer}=collect();
+  if(!inv.length&&!mer.length){toast("Ingresa al menos una sede con venta total");return;}
+  try{
+    const h=await ensureHandle();if(!h)return;
+    const file=await h.getFile();
+    const wb=XLSX.read(await file.arrayBuffer(),{type:"array"});
+    if(!wb.Sheets["Inventario"]){wb.SheetNames.push("Inventario");wb.Sheets["Inventario"]=XLSX.utils.aoa_to_sheet([INV_HDR]);}
+    if(!wb.Sheets["Merma"]){wb.SheetNames.push("Merma");wb.Sheets["Merma"]=XLSX.utils.aoa_to_sheet([MER_HDR]);}
+    wb.Sheets["Inventario"]=mergeRows(wb.Sheets["Inventario"],INV_HDR,inv,mes);
+    wb.Sheets["Merma"]=mergeRows(wb.Sheets["Merma"],MER_HDR,mer,mes);
+    const out=XLSX.write(wb,{bookType:"xlsx",type:"array"});
+    const w=await h.createWritable();await w.write(out);await w.close();
+    toast("Guardado en "+h.name+" ("+mes+")");
+  }catch(e){toast("No se pudo guardar: "+e.message);}
+};
+(async()=>{const s=await idbGet("invFile");if(s){document.getElementById("btnFolder").textContent="📁 "+s.name;}})();
+recalc();
+</script>
+</body></html>
