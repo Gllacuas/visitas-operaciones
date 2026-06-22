@@ -216,6 +216,7 @@ function exportPDF(){
    endY=ey+hh+8;
  }
  drawFirma(doc,endY);
+ try{const _d={s:m.sede,m:m.mes,v:m.visita,e:m.enc,f:m.fecha,r:flat.map(f=>{const s=state[f.key];return[f.li,f.si,(s.check==='Cumple'?'C':s.check==='No cumple'?'N':s.check==='N.A.'?'A':''),s.obs||''];})};doc.setProperties({title:'Visita de Operaciones - '+m.sede+' '+m.mes+' '+m.visita,subject:'DSVISITA',keywords:'DSDATA::'+btoa(unescape(encodeURIComponent(JSON.stringify(_d))))});}catch(e){}
  const blob=doc.output('blob');const fname=`${m.sede} - ${m.mes} - ${m.visita}.pdf`;
  if(dirHandle){savePdf(blob,m.sede,m.mes,fname);}else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;a.click();}
 }
