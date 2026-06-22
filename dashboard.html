@@ -34,6 +34,25 @@
  footer{text-align:center;color:var(--gray);font-size:12px;padding:20px}
  .hm{font-size:12.5px}.hm td{text-align:center}.hm td.s{text-align:left;font-weight:500}
 </style></head><body>
+<div id="dsgate" style="position:fixed;inset:0;background:linear-gradient(135deg,#4a2e1e,#6f4e37);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:Golos Text,Segoe UI,Arial,sans-serif;">
+<div style="background:#fff;border-radius:14px;padding:28px 26px;max-width:330px;width:90%;text-align:center;box-shadow:0 10px 34px rgba(0,0,0,.35);">
+<div style="font-family:Noto Serif,Georgia,serif;font-size:19px;color:#4a2e1e;font-weight:600;">Don Salazar Coffee</div>
+<div style="font-size:13px;color:#8a7d70;margin:4px 0 16px;">Acceso restringido &middot; ingresa la clave</div>
+<input id="dsclave" type="password" placeholder="Clave" autocomplete="off" style="width:100%;padding:11px;border:1px solid #e3d8c8;border-radius:8px;font-size:15px;margin-bottom:10px;box-sizing:border-box;">
+<button id="dsbtn" style="width:100%;padding:11px;border:none;border-radius:8px;background:#4a2e1e;color:#fff;font-size:15px;font-weight:600;cursor:pointer;">Entrar</button>
+<div id="dserr" style="color:#c62828;font-size:12px;margin-top:8px;min-height:14px;"></div>
+</div></div>
+<script>
+(function(){var HASH="cf0f9bc246d260ad34b335114228ef43c51867c5b3c604f218853e6c07c8dd9c";
+function done(){var g=document.getElementById("dsgate");if(g)g.remove();document.documentElement.style.overflow="";}
+try{if(localStorage.getItem("ds_auth")===HASH){done();return;}}catch(e){}
+document.documentElement.style.overflow="hidden";
+function sha(t){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)).then(function(b){return [].map.call(new Uint8Array(b),function(x){return x.toString(16).padStart(2,"0");}).join("");});}
+function check(){var v=document.getElementById("dsclave").value;sha(v).then(function(h){if(h===HASH){try{localStorage.setItem("ds_auth",HASH);}catch(e){}done();}else{document.getElementById("dserr").textContent="Clave incorrecta";}});}
+function wire(){var b=document.getElementById("dsbtn"),i=document.getElementById("dsclave");if(b)b.onclick=check;if(i){i.addEventListener("keydown",function(e){if(e.key==="Enter")check();});i.focus();}}
+if(document.readyState!=="loading")wire();else document.addEventListener("DOMContentLoaded",wire);
+})();
+</script>
 <header class="app">
  <div><h1>Dashboard de Operaciones 2026</h1><p>Don Salazar Coffee — Café con Sabor a Perú</p></div>
  <div class="ctrls">
