@@ -90,7 +90,7 @@ function render(){
  const f1=v=>v==null?'—':Math.round(v)+'%', f2=v=>v==null?'—':v.toFixed(1)+'%';
  const okc=v=>v!=null&&v<=2.5?'var(--gOK)':'var(--gR)';
  document.getElementById('kpis').innerHTML=
-  kpi('Nota visitas',f1(nv),'Operaciones + barista',sem(nv)[1])+
+  kpi('Nota visitas',f1(nv),'Operaciones',sem(nv)[1])+
   kpi('Checklist diario',f1(nc),'Apertura · Cambio · Cierre',sem(nc)[1])+
   kpi('Inventario',(ni==null?'—':Math.round(ni)+'%'),'sedes en rango ≤2.5%',sem(ni)[1])+
   kpi('Merma',(nm==null?'—':Math.round(nm)+'%'),'sedes en rango ≤2.5%',sem(nm)[1])+
@@ -148,8 +148,8 @@ function renderRank(){
  let rows=DATA.sedes.map(s=>{return{s,vi:sedeVisita(s,M),ck:sedeChk(s,M),iv:sedeInvOk(s,M),mr:sedeMerOk(s,M)};}).filter(r=>r.vi!=null||r.ck!=null);
  rows.sort((a,b)=>(b.vi||0)-(a.vi||0));
  let h='<tr><th style="text-align:left">Sede</th><th>Visita</th><th>Checklist</th><th>Inv.</th><th>Merma</th><th style="text-align:right">Estado</th></tr>';
- const pc=v=>{const c=sem(v);return '<td style="background:'+c[0]+';color:'+c[1]+'">'+(v==null?'—':Math.round(v)+'%')+'</td>';};
- const ec=ok=>{if(ok==null)return '<td style="background:var(--gWb);color:var(--gray)">—</td>';return ok?'<td style="background:var(--gOKb);color:var(--gOK)">✓ OK</td>':'<td style="background:var(--gRb);color:var(--gR)">✗ Excede</td>';};
+ const pc=v=>{const c=sem(v);return '<td style="text-align:center;background:'+c[0]+';color:'+c[1]+'">'+(v==null?'—':Math.round(v)+'%')+'</td>';};
+ const ec=ok=>{if(ok==null)return '<td style="text-align:center;background:var(--gWb);color:var(--gray)">—</td>';return ok?'<td style="text-align:center;background:var(--gOKb);color:var(--gOK)">✓ OK</td>':'<td style="text-align:center;background:var(--gRb);color:var(--gR)">✗ Excede</td>';};
  rows.forEach(r=>{const e=estado(r.vi||0,r.ck||0,r.iv,r.mr);
    h+='<tr><td style="text-align:left">'+r.s+'</td>'+pc(r.vi)+pc(r.ck)+ec(r.iv)+ec(r.mr)+'<td style="text-align:right"><span class="pill" style="background:'+e[1]+';color:'+e[2]+'">'+e[0]+'</span></td></tr>';});
  document.getElementById('rank').innerHTML=h;
