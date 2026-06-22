@@ -21,7 +21,8 @@
  .meta-grid input,.meta-grid select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fffdfa}
  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 16px}
  .btn{border:none;border-radius:9px;padding:11px 16px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
- .btn-pdf{background:var(--coffee);color:#fff}.btn-xls{background:#1d6f42;color:#fff}.btn-save{background:var(--gold);color:#3b2415}.btn-load{background:#efe6d6;color:#5b432e}
+ .btn-pdf{background:var(--coffee);color:#fff}.btn-xls{background:#1d6f42;color:#fff}.btn-save{background:var(--gold);color:#3b2415}.btn-load{background:#efe6d6;color:#5b432e}.btn-folder{background:#2a6f97;color:#fff}.btn-folder.on{background:#1d6f42}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#4a2e1e;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.3);opacity:0;transition:.25s;z-index:100;max-width:90%;text-align:center}.toast.show{opacity:1}
  .lego{margin-bottom:16px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
  .lego-head{background:var(--coffee2);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
  .lego-head h2{margin:0;font-size:16px}.lego-badge{font-size:13px;font-weight:700;background:rgba(255,255,255,.15);border:1px solid var(--gold);padding:3px 10px;border-radius:20px}
@@ -63,6 +64,7 @@
    <button class="btn btn-save" onclick="saveProgress()">💾 Guardar avance</button>
    <button class="btn btn-load" onclick="document.getElementById('loadFile').click()">📂 Cargar avance</button>
    <input type="file" id="loadFile" accept=".json" style="display:none" onchange="loadProgress(event)">
+    <button class="btn btn-folder" id="folderBtn" onclick="connectFolder()">📁 Conectar carpeta</button>
  </div>
  <div class="hint">Marca <b>Cumple</b> / <b>No cumple</b> / <b>N.A.</b> en cada punto y agrega la observación. Las <b>fotos se cargan todas juntas al final</b>; ordénalas con ◀ ▶ y así salen en el PDF.</div>
  <div id="legos"></div>
@@ -151,6 +153,15 @@ function loadProgress(ev){const f=ev.target.files[0];if(!f)return;const r=new Fi
    evidImgs=o.evid||[];renderEvid();recalc();alert('Avance cargado.');
  }catch(err){alert('Archivo inválido');}};r.readAsText(f);}
 
+let dirHandle=null;let _tt;
+function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>e.classList.remove('show'),4000);}
+function idb(mode,fn){return new Promise((res,rej)=>{const o=indexedDB.open('ds_visitas',1);o.onupgradeneeded=()=>o.result.createObjectStore('kv');o.onsuccess=()=>{const tx=o.result.transaction('kv',mode);fn(tx.objectStore('kv'),res,rej);};o.onerror=()=>rej(o.error);});}
+function idbGet(k){return idb('readonly',(st,res)=>{const g=st.get(k);g.onsuccess=()=>res(g.result);g.onerror=()=>res(null);});}
+function idbSet(k,v){return idb('readwrite',(st,res)=>{st.put(v,k);res(true);});}
+function setFolderBtn(on){const b=document.getElementById('folderBtn');if(!b)return;b.classList.toggle('on',on);b.textContent=on?'📁 Carpeta conectada ✓':'📁 Conectar carpeta';}
+async function connectFolder(){try{dirHandle=await window.showDirectoryPicker({mode:'readwrite'});await idbSet('dir',dirHandle);setFolderBtn(true);toast('Carpeta conectada. Los PDF se guardarán en Visita de Operaciones / Sede / Mes.');}catch(e){if(e.name!=='AbortError')toast('No se pudo conectar la carpeta (usa Chrome o Edge en la computadora).');}}
+async function tryReconnect(){try{const hh=await idbGet('dir');if(!hh)return;const pm=await hh.queryPermission({mode:'readwrite'});if(pm==='granted'){dirHandle=hh;setFolderBtn(true);}else{const b=document.getElementById('folderBtn');if(b){b.textContent='📁 Reconectar carpeta';b.onclick=async()=>{const q=await hh.requestPermission({mode:'readwrite'});if(q==='granted'){dirHandle=hh;setFolderBtn(true);b.onclick=connectFolder;}};}}}catch(e){}}
+async function savePdf(blob,sede,mes,fname){try{const root=await dirHandle.getDirectoryHandle('Visita de Operaciones',{create:true});const sd=await root.getDirectoryHandle(sede,{create:true});const md=await sd.getDirectoryHandle(mes,{create:true});const fh=await md.getFileHandle(fname,{create:true});const w=await fh.createWritable();await w.write(blob);await w.close();toast('✔ PDF guardado en: Visita de Operaciones / '+sede+' / '+mes+'/');}catch(e){toast('No se pudo guardar en carpeta; descargando…');const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;a.click();}}
 function exportPDF(){
  const {jsPDF}=window.jspdf;const doc=new jsPDF('p','mm','a4');const PW=210;
  const coffee=[74,46,30],coffee2=[111,78,55],gold=[200,163,91];const m=meta();
@@ -205,7 +216,8 @@ function exportPDF(){
    endY=ey+hh+8;
  }
  drawFirma(doc,endY);
- doc.save(fnameBase()+".pdf");
+ const blob=doc.output('blob');const fname=`${m.sede} - ${m.mes} - ${m.visita}.pdf`;
+ if(dirHandle){savePdf(blob,m.sede,m.mes,fname);}else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;a.click();}
 }
 function drawFirma(doc,y){
  const gold=[200,163,91],coffee2=[111,78,55];
@@ -224,5 +236,6 @@ function drawFirma(doc,y){
 }
 function addFooter(doc){doc.setFontSize(8);doc.setTextColor(150,140,130);doc.setFont('helvetica','normal');
  doc.text('Don Salazar Coffee · Operaciones · Café con Sabor a Perú',105,291,{align:'center'});}
-init();
-</script></body></html>
+init();tryReconnect();
+</script><div class="toast" id="toast"></div>
+</body></html>
