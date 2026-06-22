@@ -68,7 +68,7 @@ function sem(v){if(v==null)return['var(--gWb)','var(--gray)'];if(v>=80)return['v
 function rate(v){if(v==null)return['var(--gWb)','var(--gray)','—'];if(v<=2.0)return['var(--gOKb)','var(--gOK)','✓'];if(v<=2.5)return['var(--gWb)','var(--gW)','≈'];return['var(--gRb)','var(--gR)','✗'];}
 const mS=x=>!S||x[0]===S, mM=x=>!M||x[1]===M;
 
-function sedeVisita(sede,mes){return avg(DATA.visnota.filter(x=>x[0]===sede&&(!mes||x[1]===mes)&&String(x[2]).startsWith('Operaciones')).map(x=>x[3]));}
+function sedeVisita(sede,mes){return avg(DATA.visnota.filter(x=>x[0]===sede&&(!mes||x[1]===mes)).map(x=>x[3]));}
 function sedeChk(sede,mes){return wavg(DATA.checklist.filter(x=>x[0]===sede&&(!mes||x[1]===mes)));}
 function sedeInvOk(sede,mes){const a=DATA.inv.filter(x=>x[0]===sede&&(!mes||x[1]===mes));return a.length?a.every(x=>x[2]==='OK'):null;}
 function sedeMerOk(sede,mes){const a=DATA.merma.filter(x=>x[0]===sede&&(!mes||x[1]===mes));return a.length?a.every(x=>x[2]==='OK'):null;}
@@ -79,7 +79,7 @@ function estado(vi,ck,invOk,merOk){const okR=(invOk!==false)&&(merOk!==false);
 
 function render(){
  // KPIs
- const nv=avg(DATA.visnota.filter(x=>mS(x)&&mM(x)&&String(x[2]).startsWith('Operaciones')).map(x=>x[3]));
+ const nv=avg(DATA.visnota.filter(x=>mS(x)&&mM(x)).map(x=>x[3]));
  const nc=wavg(DATA.checklist.filter(x=>mS(x)&&mM(x)));
  const invR=DATA.inv.filter(x=>mS(x)&&mM(x));const ni=invR.length?100*invR.filter(x=>x[2]==='OK').length/invR.length:null;
  const merR=DATA.merma.filter(x=>mS(x)&&mM(x));const nm=merR.length?100*merR.filter(x=>x[2]==='OK').length/merR.length:null;
@@ -89,7 +89,7 @@ function render(){
  const f1=v=>v==null?'—':Math.round(v)+'%', f2=v=>v==null?'—':v.toFixed(1)+'%';
  const okc=v=>v!=null&&v<=2.5?'var(--gOK)':'var(--gR)';
  document.getElementById('kpis').innerHTML=
-  kpi('Nota visitas',f1(nv),'',sem(nv)[1])+
+  kpi('Nota visitas',f1(nv),'Operaciones + barista',sem(nv)[1])+
   kpi('Checklist diario',f1(nc),'Apertura · Cambio · Cierre',sem(nc)[1])+
   kpi('Inventario',(ni==null?'—':Math.round(ni)+'%'),'sedes en rango ≤2.5%',sem(ni)[1])+
   kpi('Merma',(nm==null?'—':Math.round(nm)+'%'),'sedes en rango ≤2.5%',sem(nm)[1])+
@@ -100,7 +100,7 @@ function kpi(l,v,s,col){return '<div class="kpi"><div class="l">'+l+'</div><div 
 
 function renderEvo(){
  const labels=DATA.meses;
- const vi=labels.map(m=>{const a=avg(DATA.visnota.filter(x=>mS(x)&&x[1]===m&&String(x[2]).startsWith('Operaciones')).map(x=>x[3]));return a==null?null:Math.round(a);});
+ const vi=labels.map(m=>{const a=avg(DATA.visnota.filter(x=>mS(x)&&x[1]===m).map(x=>x[3]));return a==null?null:Math.round(a);});
  const ck=labels.map(m=>{const a=wavg(DATA.checklist.filter(x=>mS(x)&&x[1]===m));return a==null?null:Math.round(a);});
  document.getElementById('evoLeg').innerHTML='<span style="color:#6f4e37">■</span> Nota visitas &nbsp; <span style="color:#c8a35b">■</span> Checklist';
  mk('evo',{type:'line',data:{labels,datasets:[
