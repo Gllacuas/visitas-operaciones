@@ -33,6 +33,26 @@
  .pill{padding:1px 9px;border-radius:10px;font-size:11px;font-weight:700}
  footer{text-align:center;color:var(--gray);font-size:12px;padding:20px}
  .hm{font-size:12.5px}.hm td{text-align:center}.hm td.s{text-align:left;font-weight:500}
+ /* === cinta lateral === */
+ body{padding-left:212px}
+ .dssb{position:fixed;top:0;left:0;bottom:0;width:212px;background:linear-gradient(180deg,#3a2417,#4a2e1e);color:#fff;z-index:60;padding:16px 0;overflow-y:auto}
+ .dssb .brand{padding:0 18px 14px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:10px}
+ .dssb .brand b{font-family:'Noto Serif',Georgia,serif;font-size:16px;color:#fff;font-weight:600}
+ .dssb .brand span{display:block;font-size:11px;color:var(--gold);font-style:italic;margin-top:2px}
+ .dssb .grp{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gold);padding:14px 18px 6px;opacity:.85}
+ .dssb a{display:flex;align-items:center;gap:10px;padding:11px 18px;color:#e9ddcd;text-decoration:none;font-size:13.5px;font-weight:500;border-left:3px solid transparent;cursor:pointer}
+ .dssb a:hover{background:rgba(255,255,255,.06)}
+ .dssb a.on{background:rgba(200,163,91,.18);border-left-color:var(--gold);color:#fff;font-weight:600}
+ .dssb a .ic{width:18px;text-align:center;font-size:15px}
+ .dssb a .soon{margin-left:auto;font-size:8.5px;background:rgba(255,255,255,.14);padding:2px 6px;border-radius:10px;color:var(--gold);letter-spacing:.5px}
+ .view{display:none}.view.active{display:block}
+ .ph{text-align:center;padding:54px 20px}
+ .ph .ico{font-size:48px;line-height:1}
+ .ph h2{font-family:'Noto Serif',Georgia,serif;color:var(--coffee);margin:16px 0 6px;font-size:22px}
+ .ph p{color:var(--gray);font-size:14px;max-width:460px;margin:0 auto 4px}
+ .ph .chips{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+ .ph .chip{background:#fff;border:1px solid var(--line);border-radius:20px;padding:7px 14px;font-size:12.5px;color:var(--coffee2)}
+ @media(max-width:820px){body{padding-left:0}.dssb{position:static;width:auto;display:flex;flex-wrap:wrap;align-items:center;bottom:auto;padding:8px}.dssb .brand{width:100%;border:none;margin:0;padding:6px 12px}.dssb .grp{display:none}.dssb a{border-left:none;border-bottom:3px solid transparent;padding:9px 12px;flex:0 0 auto}.dssb a.on{border-left:none;border-bottom-color:var(--gold)}.dssb a .soon{display:none}}
 </style></head><body>
 <div id="dsgate" style="position:fixed;inset:0;background:linear-gradient(135deg,#4a2e1e,#6f4e37);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:Golos Text,Segoe UI,Arial,sans-serif;">
 <div style="background:#fff;border-radius:14px;padding:28px 26px;max-width:330px;width:90%;text-align:center;box-shadow:0 10px 34px rgba(0,0,0,.35);">
@@ -52,6 +72,20 @@ function wire(){var b=document.getElementById("dsbtn"),i=document.getElementById
 if(document.readyState!=="loading")wire();else document.addEventListener("DOMContentLoaded",wire);
 })();
 </script>
+<nav class="dssb">
+ <div class="brand"><b>Don Salazar</b><span>Panel de gestión 2026</span></div>
+ <a class="on" onclick="showView('operaciones',this)"><span class="ic">📊</span>Operaciones</a>
+ <a onclick="showView('mantenimientos',this)"><span class="ic">🔧</span>Mantenimientos<span class="soon">PRONTO</span></a>
+ <a onclick="showView('ventas',this)"><span class="ic">💰</span>Ventas<span class="soon">PRONTO</span></a>
+ <div class="grp">Cobertura</div>
+ <a onclick="showView('cob-personal',this)"><span class="ic">👥</span>Personal<span class="soon">PRONTO</span></a>
+ <a onclick="showView('cob-menaje',this)"><span class="ic">🍽️</span>Menaje<span class="soon">PRONTO</span></a>
+ <a onclick="showView('cob-productos',this)"><span class="ic">📦</span>Productos<span class="soon">PRONTO</span></a>
+ <div class="grp">Formularios</div>
+ <a href="index.html"><span class="ic">📝</span>Visita de operaciones</a>
+ <a href="checklist.html"><span class="ic">✅</span>Checklist diario</a>
+ <a href="inventario.html"><span class="ic">📉</span>Inventario y merma</a>
+</nav>
 <header class="app">
  <div><h1>Dashboard de Operaciones 2026</h1><p>Don Salazar Coffee — Café con Sabor a Perú</p></div>
  <div class="ctrls">
@@ -61,6 +95,7 @@ if(document.readyState!=="loading")wire();else document.addEventListener("DOMCon
  </div>
 </header>
 <div class="wrap">
+ <div id="view-operaciones" class="view active">
  <div class="kpis" id="kpis"></div>
  <div class="grid2">
    <div class="card"><h2>Evolución mensual</h2><div class="sub" id="evoLeg"></div><div style="position:relative;height:210px"><canvas id="evo"></canvas></div></div>
@@ -73,6 +108,17 @@ if(document.readyState!=="loading")wire();else document.addEventListener("DOMCon
    <div class="card"><h2 id="drillT">Puntos críticos</h2><div class="sub"># de "No cumple" sobre evaluaciones</div><div id="drill" style="font-size:13px"></div></div>
  </div>
  <div class="card"><h2>Ranking de sedes</h2><div class="sub">Estado OK solo si todo está en rango: visita y checklist altos e inventario y merma ≤ 2.5%</div><table class="dt" id="rank"></table></div>
+ </div><!-- /view-operaciones -->
+
+ <div id="view-mantenimientos" class="view"><div class="ph"><div class="ico">🔧</div><h2>Mantenimientos</h2><p>Aquí verás el estado de mantenimientos por sede: preventivos y correctivos, equipos, presupuesto vs. consumo y alertas de vencimiento.</p><div class="chips"><span class="chip">Presupuesto vs. consumo</span><span class="chip">Preventivos / correctivos</span><span class="chip">Equipos por sede</span><span class="chip">Certificados y vencimientos</span></div><p style="margin-top:22px;color:var(--coffee2);font-weight:600">En construcción · la activamos en cuanto definamos la fuente de datos.</p></div></div>
+
+ <div id="view-ventas" class="view"><div class="ph"><div class="ico">💰</div><h2>Ventas</h2><p>Evolución de ventas por sede y mes, ticket promedio, comparativos y ranking comercial.</p><div class="chips"><span class="chip">Venta por sede / mes</span><span class="chip">Ticket promedio</span><span class="chip">Comparativo vs. mes anterior</span><span class="chip">Ranking comercial</span></div><p style="margin-top:22px;color:var(--coffee2);font-weight:600">En construcción.</p></div></div>
+
+ <div id="view-cob-personal" class="view"><div class="ph"><div class="ico">👥</div><h2>Cobertura de personal</h2><p>Dotación vs. requerido por sede, turnos cubiertos, ausentismo y brechas de personal.</p><div class="chips"><span class="chip">Dotación vs. requerido</span><span class="chip">Turnos cubiertos</span><span class="chip">Ausentismo</span><span class="chip">Brechas por sede</span></div><p style="margin-top:22px;color:var(--coffee2);font-weight:600">En construcción.</p></div></div>
+
+ <div id="view-cob-menaje" class="view"><div class="ph"><div class="ico">🍽️</div><h2>Cobertura de menaje</h2><p>Stock de menaje vs. estándar por sede, faltantes, roturas y reposiciones.</p><div class="chips"><span class="chip">Stock vs. estándar</span><span class="chip">Faltantes</span><span class="chip">Roturas</span><span class="chip">Reposiciones</span></div><p style="margin-top:22px;color:var(--coffee2);font-weight:600">En construcción.</p></div></div>
+
+ <div id="view-cob-productos" class="view"><div class="ph"><div class="ico">📦</div><h2>Cobertura de productos</h2><p>Disponibilidad de productos por sede, quiebres de stock, vigencia y cobertura de carta.</p><div class="chips"><span class="chip">Disponibilidad</span><span class="chip">Quiebres de stock</span><span class="chip">Cobertura de carta</span><span class="chip">Vigencia</span></div><p style="margin-top:22px;color:var(--coffee2);font-weight:600">En construcción.</p></div></div>
 </div>
 <footer>Don Salazar Coffee · Operaciones · Café con Sabor a Perú</footer>
 <script>
@@ -231,4 +277,5 @@ async function reloadData(){
  render();
 }
 initFilters();render();tryReconnect();
+function showView(id,el){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));var t=document.getElementById('view-'+id);if(t)t.classList.add('active');document.querySelectorAll('.dssb a[onclick]').forEach(a=>a.classList.remove('on'));if(el)el.classList.add('on');window.scrollTo(0,0);}
 </script></body></html>
