@@ -116,7 +116,7 @@ if(document.readyState!=="loading")wire();else document.addEventListener("DOMCon
 
  <div id="view-cob-personal" class="view"><div class="ph"><div class="ico">👥</div><h2>Cobertura de personal</h2><p>Dotación vs. requerido por sede, turnos cubiertos, ausentismo y brechas de personal.</p><div class="chips"><span class="chip">Dotación vs. requerido</span><span class="chip">Turnos cubiertos</span><span class="chip">Ausentismo</span><span class="chip">Brechas por sede</span></div><p style="margin-top:22px;color:var(--coffee2);font-weight:600">En construcción.</p></div></div>
 
- <div id="view-cob-menaje" class="view"><div class="ph"><div class="ico">🍽️</div><h2>Cobertura de menaje</h2><p>Stock de menaje vs. estándar por sede, faltantes, roturas y reposiciones.</p><div class="chips"><span class="chip">Stock vs. estándar</span><span class="chip">Faltantes</span><span class="chip">Roturas</span><span class="chip">Reposiciones</span></div><p style="margin-top:22px;color:var(--coffee2);font-weight:600">En construcción.</p></div></div>
+ <div id="view-cob-menaje" class="view"><div style="margin-bottom:6px"><h2 style="margin:0;font-size:18px;color:var(--coffee);font-family:'Noto Serif',Georgia,serif">Cobertura de menaje</h2><div class="sub" style="color:var(--gray);font-size:12px">Stock actual vs. estándar por tier. <b style="color:var(--gold)">LUXURY</b>: San Miguel, Pardo, Camelias · <b style="color:var(--coffee2)">PREMIUM</b>: el resto. Semáforo: verde ≥90% · ámbar 70–90% · rojo &lt;70%. (UP no maneja menaje)</div></div><div class="kpis" id="mnjKpis"></div><div class="card"><h2>Stock por sede y material</h2><div class="sub">Cada celda: stock actual / ideal. Pasa el cursor para ver % de cobertura.</div><div style="overflow-x:auto"><table class="dt hm" id="mnjTbl"></table></div></div><div class="card"><h2>Pedido sugerido (para llegar al ideal)</h2><div id="mnjPed" style="font-size:13px"></div></div></div>
 
  <div id="view-cob-productos" class="view"><div class="ph"><div class="ico">📦</div><h2>Cobertura de productos</h2><p>Disponibilidad de productos por sede, quiebres de stock, vigencia y cobertura de carta.</p><div class="chips"><span class="chip">Disponibilidad</span><span class="chip">Quiebres de stock</span><span class="chip">Cobertura de carta</span><span class="chip">Vigencia</span></div><p style="margin-top:22px;color:var(--coffee2);font-weight:600">En construcción.</p></div></div>
 </div>
@@ -277,5 +277,37 @@ async function reloadData(){
  render();
 }
 initFilters();render();tryReconnect();
+const MENAJE={"sedes": ["Camelias", "Pardo", "San Miguel", "Fontana", "Higuereta", "Jockey", "Puntamar", "Salaverry"], "lux": ["Camelias", "Pardo", "San Miguel"], "prem": ["Fontana", "Higuereta", "Jockey", "Puntamar", "Salaverry"], "mats": ["Doble fondo M", "Doble fondo XS", "Doble fondo L", "Copa margarita", "Copa vino", "Copa Sour", "Copa Martini", "Vaso lata", "Taza marsellesa", "Taza cerrada", "Taza abierta", "Taza stumpy", "Taza cuenco 4 oz", "Taza cuenco 8 oz", "Taza 10 oz con asa", "Taza boca ancha"], "actual": {"Doble fondo M": {"Camelias": 4, "Pardo": 2, "San Miguel": 8, "Fontana": 2, "Higuereta": 5, "Jockey": 5, "Puntamar": 0, "Salaverry": 3}, "Doble fondo XS": {"Camelias": 5, "Pardo": 3, "San Miguel": 4, "Fontana": 0, "Higuereta": 0, "Jockey": 0, "Puntamar": 1, "Salaverry": 0}, "Doble fondo L": {"Camelias": 10, "Pardo": 6, "San Miguel": 0, "Fontana": 0, "Higuereta": 7, "Jockey": 3, "Puntamar": 5, "Salaverry": 6}, "Copa margarita": {"Camelias": 10, "Pardo": 10, "San Miguel": 6, "Fontana": 0, "Higuereta": 6, "Jockey": 0, "Puntamar": 5, "Salaverry": 4}, "Copa vino": {"Camelias": 20, "Pardo": 12, "San Miguel": 13, "Fontana": 1, "Higuereta": 7, "Jockey": 5, "Puntamar": 6, "Salaverry": 7}, "Copa Sour": {"Camelias": 1, "Pardo": 8, "San Miguel": 10, "Fontana": 0, "Higuereta": 8, "Jockey": 4, "Puntamar": 3, "Salaverry": 4}, "Copa Martini": {"Camelias": 10, "Pardo": 8, "San Miguel": 10, "Fontana": 0, "Higuereta": 6, "Jockey": 0, "Puntamar": 2, "Salaverry": 5}, "Vaso lata": {"Camelias": 6, "Pardo": 10, "San Miguel": 15, "Fontana": 3, "Higuereta": 7, "Jockey": 3, "Puntamar": 2, "Salaverry": 8}, "Taza marsellesa": {"Camelias": 7, "Pardo": 4, "San Miguel": 6, "Fontana": 5, "Higuereta": 3, "Jockey": 4, "Puntamar": 3, "Salaverry": 5}, "Taza cerrada": {"Camelias": 9, "Pardo": 7, "San Miguel": 7, "Fontana": 3, "Higuereta": 4, "Jockey": 3, "Puntamar": 3, "Salaverry": 4}, "Taza abierta": {"Camelias": 10, "Pardo": 7, "San Miguel": 8, "Fontana": 3, "Higuereta": 4, "Jockey": 3, "Puntamar": 3, "Salaverry": 4}, "Taza stumpy": {"Camelias": 2, "Pardo": 2, "San Miguel": 2, "Fontana": 0, "Higuereta": 2, "Jockey": 2, "Puntamar": 0, "Salaverry": 1}, "Taza cuenco 4 oz": {"Camelias": 4, "Pardo": 3, "San Miguel": 0, "Fontana": 3, "Higuereta": 2, "Jockey": 2, "Puntamar": 2, "Salaverry": 2}, "Taza cuenco 8 oz": {"Camelias": 8, "Pardo": 4, "San Miguel": 4, "Fontana": 4, "Higuereta": 2, "Jockey": 3, "Puntamar": 2, "Salaverry": 2}, "Taza 10 oz con asa": {"Camelias": 7, "Pardo": 6, "San Miguel": 7, "Fontana": 3, "Higuereta": 2, "Jockey": 3, "Puntamar": 5, "Salaverry": 4}, "Taza boca ancha": {"Camelias": 9, "Pardo": 7, "San Miguel": 10, "Fontana": 6, "Higuereta": 4, "Jockey": 6, "Puntamar": 4, "Salaverry": 4}}, "idealLux": {"Doble fondo M": 5, "Doble fondo XS": 6, "Doble fondo L": 12, "Copa margarita": 10, "Copa vino": 20, "Copa Sour": 10, "Copa Martini": 10, "Vaso lata": 12, "Taza marsellesa": 10, "Taza cerrada": 8, "Taza abierta": 8, "Taza stumpy": 5, "Taza cuenco 4 oz": 5, "Taza cuenco 8 oz": 5, "Taza 10 oz con asa": 10, "Taza boca ancha": 10}, "idealPrem": {"Doble fondo M": 5, "Doble fondo XS": 0, "Doble fondo L": 8, "Copa margarita": 0, "Copa vino": 6, "Copa Sour": 5, "Copa Martini": 0, "Vaso lata": 8, "Taza marsellesa": 6, "Taza cerrada": 4, "Taza abierta": 4, "Taza stumpy": 3, "Taza cuenco 4 oz": 3, "Taza cuenco 8 oz": 3, "Taza 10 oz con asa": 6, "Taza boca ancha": 6}};
+function kpiC(l,v,c){return '<div class="kpi"><div class="l">'+l+'</div><div class="v" style="color:'+c+'">'+v+'</div></div>';}
+function mnjIdeal(mat,sede){return MENAJE.lux.indexOf(sede)>=0?MENAJE.idealLux[mat]:MENAJE.idealPrem[mat];}
+function mnjSem(cov){if(cov==null)return['','var(--gray)'];if(cov>=90)return['var(--gOKb)','var(--gOK)'];if(cov>=70)return['var(--gWb)','var(--gW)'];return['var(--gRb)','var(--gR)'];}
+function renderMenaje(){
+ var T=document.getElementById('mnjTbl');if(!T)return;
+ var rojo=0,amb=0,sedeAlert={};MENAJE.sedes.forEach(function(s){sedeAlert[s]=0;});
+ var hd='<tr><th style="text-align:left">Material</th><th colspan="'+MENAJE.lux.length+'" style="color:var(--gold)">LUXURY</th><th colspan="'+MENAJE.prem.length+'" style="color:var(--coffee2)">PREMIUM</th></tr>';
+ hd+='<tr><th></th>'+MENAJE.sedes.map(function(s){return '<th>'+s+'</th>';}).join('')+'</tr>';
+ var body='';
+ MENAJE.mats.forEach(function(m){
+   body+='<tr><td class="s">'+m+'</td>';
+   MENAJE.sedes.forEach(function(s){
+     var id=mnjIdeal(m,s),ac=(MENAJE.actual[m]&&MENAJE.actual[m][s])||0;
+     if(!id){body+='<td style="color:var(--gray)">–</td>';return;}
+     var cov=ac/id*100,sm=mnjSem(cov);
+     if(cov<70){rojo++;sedeAlert[s]++;}else if(cov<90){amb++;sedeAlert[s]++;}
+     body+='<td style="background:'+sm[0]+';color:'+sm[1]+';font-weight:600" title="Cobertura '+Math.round(cov)+'%">'+ac+'/'+id+'</td>';
+   });
+   body+='</tr>';
+ });
+ T.innerHTML=hd+body;
+ var sa=Object.keys(sedeAlert).filter(function(s){return sedeAlert[s]>0;}).length;
+ document.getElementById('mnjKpis').innerHTML=kpiC('Materiales en rojo (&lt;70%)',rojo,'var(--gR)')+kpiC('Materiales en ámbar (70–90%)',amb,'var(--gW)')+kpiC('Sedes con alerta',sa+'/'+MENAJE.sedes.length,'var(--coffee)');
+ var p='';MENAJE.sedes.forEach(function(s){
+   var items=[];MENAJE.mats.forEach(function(m){var id=mnjIdeal(m,s);if(!id)return;var ac=(MENAJE.actual[m]&&MENAJE.actual[m][s])||0;var ped=id-ac;if(ped>0)items.push(m+' <b>('+ped+')</b>');});
+   var tag=MENAJE.lux.indexOf(s)>=0?'<span style="color:var(--gold);font-size:10.5px;font-weight:700">LUXURY</span>':'<span style="color:var(--coffee2);font-size:10.5px;font-weight:700">PREMIUM</span>';
+   p+='<div style="margin-bottom:9px;padding-bottom:9px;border-bottom:1px solid var(--line)"><b>'+s+'</b> '+tag+'<br>'+(items.length?items.join(' · '):'<span style="color:var(--gOK)">completo ✓</span>')+'</div>';
+ });
+ document.getElementById('mnjPed').innerHTML=p;
+}
+renderMenaje();
 function showView(id,el){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));var t=document.getElementById('view-'+id);if(t)t.classList.add('active');document.querySelectorAll('.dssb a[onclick]').forEach(a=>a.classList.remove('on'));if(el)el.classList.add('on');window.scrollTo(0,0);}
 </script></body></html>
